@@ -33,7 +33,10 @@ exports.addDevice = async (req, res) => {
       }
     });
 
-    const runtime = await whatsappService.connectDevice(device);
+    const runtime = await whatsappService.connectDevice(device, {
+      method: req.body.method,
+      phoneNumber: req.body.phoneNumber
+    });
 
     res.json({
       message: 'Device added. Scan QR untuk menyambungkan WhatsApp.',
@@ -54,7 +57,10 @@ exports.connectDevice = async (req, res) => {
       return res.status(404).json({ message: 'Device not found' });
     }
 
-    const runtime = await whatsappService.connectDevice(device);
+    const runtime = await whatsappService.connectDevice(device, {
+      method: req.body.method,
+      phoneNumber: req.body.phoneNumber
+    });
     res.json({ message: 'Connection started', runtime });
   } catch (error) {
     res.status(500).json({ message: 'Error connecting device', error: error.message });

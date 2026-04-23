@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { 
-  LogOut, 
-  Wallet, 
-  ArrowUpRight, 
-  History, 
-  AlertCircle, 
+import {
+  LogOut,
+  Wallet,
+  ArrowUpRight,
+  History,
+  AlertCircle,
   CheckCircle,
-  User, 
-  Home, 
-  MessageSquare, 
+  User,
+  Home,
+  MessageSquare,
   Users,
   ClipboardList,
   Target
@@ -78,7 +78,7 @@ const Withdraw = () => {
               <img src="/src/assets/logo.png" alt="Logo" />
             </div>
             <div>
-              <h1 className="header-title">TerimaWa</h1>
+              <h1 className="header-title">WainAja</h1>
               <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>Withdraw</p>
             </div>
           </div>
@@ -122,7 +122,7 @@ const Withdraw = () => {
                 <span>Request Withdraw</span>
               </div>
             </div>
-            
+
             {(!profile?.bankName || !profile?.accountNumber) ? (
               <div className="empty-state">
                 <div className="empty-icon-box" style={{ background: '#fff5f5', color: '#ff7675' }}>
@@ -138,11 +138,11 @@ const Withdraw = () => {
               <form onSubmit={handleWithdraw} style={{ padding: '1.5rem' }}>
                 <div className="form-group">
                   <label className="form-label">Jumlah Penarikan (Rp)</label>
-                  <input 
-                    type="number" 
-                    placeholder="Contoh: 10000" 
-                    value={amount} 
-                    onChange={(e) => setAmount(e.target.value)} 
+                  <input
+                    type="number"
+                    placeholder="Contoh: 10000"
+                    value={amount}
+                    onChange={(e) => setAmount(e.target.value)}
                   />
                   <p style={{ fontSize: '0.65rem', color: '#636e72', marginTop: '0.5rem' }}>
                     Dana akan dikirim ke: <strong>{profile.bankName} - {profile.accountNumber} ({profile.accountHolder})</strong>

@@ -3,7 +3,7 @@ const path = require('path');
 const pino = require('pino');
 const QRCode = require('qrcode');
 const { PrismaClient } = require('@prisma/client');
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
 
 const prisma = new PrismaClient();
 
@@ -43,7 +43,7 @@ const normalizePhoneNumber = (jid) => {
   return jid.split('@')[0] || null;
 };
 
-const connectDevice = async (device) => {
+const connectDevice = async (device, options = {}) => {
   LOGGER.info({ deviceId: device.id, userId: device.userId }, 'Starting WhatsApp connect flow');
   await ensureSessionRoot();
 
@@ -60,12 +60,15 @@ const connectDevice = async (device) => {
   await fs.promises.mkdir(authDir, { recursive: true, mode: 0o700 });
   await fs.promises.chmod(authDir, 0o700);
   const { state, saveCreds } = await useMultiFileAuthState(authDir);
+  const { version, isLatest } = await fetchLatestBaileysVersion();
+  LOGGER.info({ version, isLatest }, 'Using WA v' + version.join('.'));
 
   const sock = makeWASocket({
+    version,
     auth: state,
     printQRInTerminal: false,
     logger: LOGGER,
-    browser: ['TerimaWa', 'Desktop', '1.0.0']
+    browser: Browsers.ubuntu('Chrome')
   });
 
   upsertSessionState(device.id, {
@@ -74,8 +77,27 @@ const connectDevice = async (device) => {
     sock,
     status: 'CONNECTING',
     qrCode: null,
+    pairingCode: null,
     phoneNumber: null
   });
+
+  if (options.method === 'pairing' && options.phoneNumber && !state.creds.me) {
+    if (options.phoneNumber.startsWith('0')) {
+      options.phoneNumber = '62' + options.phoneNumber.substring(1);
+    }
+    const cleanNumber = options.phoneNumber.replace(/\D/g, '');
+    
+    sock.waitForConnectionUpdate((update) => !!update.qr).then(async () => {
+      try {
+        const code = await sock.requestPairingCode(cleanNumber);
+        upsertSessionState(device.id, { pairingCode: code, status: 'PAIRING_READY', qrCode: null });
+        LOGGER.info({ deviceId: device.id, code }, 'Pairing code generated successfully');
+      } catch (err) {
+        LOGGER.error({ deviceId: device.id, err: err.message }, 'Failed to generate pairing code');
+        upsertSessionState(device.id, { status: 'DISCONNECTED', pairingCode: null });
+      }
+    }).catch(() => {});
+  }
 
   await updateDeviceRecord(device.id, {
     status: 'DISCONNECTED',
@@ -147,6 +169,7 @@ const connectDevice = async (device) => {
   return {
     status: 'CONNECTING',
     qrCode: null,
+    pairingCode: null,
     phoneNumber: null
   };
 };
@@ -157,6 +180,7 @@ const getDeviceStatus = async (deviceId) => {
     return {
       status: runtime.status || 'DISCONNECTED',
       qrCode: runtime.qrCode || null,
+      pairingCode: runtime.pairingCode || null,
       phoneNumber: runtime.phoneNumber || null
     };
   }
@@ -167,6 +191,7 @@ const getDeviceStatus = async (deviceId) => {
   return {
     status: device.status,
     qrCode: null,
+    pairingCode: null,
     phoneNumber: device.phoneNumber
   };
 };

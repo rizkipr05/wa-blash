@@ -31,8 +31,14 @@ const WhatsApp = () => {
   const [connectionInfo, setConnectionInfo] = useState({
     status: 'DISCONNECTED',
     phoneNumber: null,
-    qrCode: null
+    qrCode: null,
+    pairingCode: null
   });
+
+  const [methodModalOpen, setMethodModalOpen] = useState(false);
+  const [connectionMethod, setConnectionMethod] = useState('qr');
+  const [phoneNumberInput, setPhoneNumberInput] = useState('');
+  const [isReconnecting, setIsReconnecting] = useState(false);
 
   const fetchDevices = React.useCallback(async () => {
     try {
@@ -72,28 +78,46 @@ const WhatsApp = () => {
     return () => clearInterval(intervalId);
   }, [modalOpen, selectedDeviceId, fetchDeviceStatus, fetchDevices]);
 
-  const handleAddDevice = async () => {
-    try {
-      const response = await api.post('/whatsapp/add');
-      const { device } = response.data;
-      setSelectedDeviceId(device.id);
-      setModalOpen(true);
-      await fetchDevices();
-      await fetchDeviceStatus(device.id);
-    } catch {
-      alert('Error adding device');
-    }
+  const startAddDevice = () => {
+    setConnectionMethod('qr');
+    setPhoneNumberInput('');
+    setIsReconnecting(false);
+    setSelectedDeviceId(null);
+    setMethodModalOpen(true);
   };
 
-  const handleReconnectDevice = async (deviceId) => {
+  const startReconnectDevice = (deviceId) => {
+    setConnectionMethod('qr');
+    setPhoneNumberInput('');
+    setIsReconnecting(true);
+    setSelectedDeviceId(deviceId);
+    setMethodModalOpen(true);
+  };
+
+  const submitConnection = async () => {
+    if (connectionMethod === 'pairing' && !phoneNumberInput) {
+      alert('Masukkan nomor telepon (contoh: 6281234...)');
+      return;
+    }
+    
+    setMethodModalOpen(false);
     try {
-      await api.post(`/whatsapp/${deviceId}/connect`);
-      setSelectedDeviceId(deviceId);
+      const payload = { method: connectionMethod, phoneNumber: phoneNumberInput };
+      let newDeviceId = selectedDeviceId;
+
+      if (!isReconnecting) {
+        const response = await api.post('/whatsapp/add', payload);
+        newDeviceId = response.data.device.id;
+        setSelectedDeviceId(newDeviceId);
+      } else {
+        await api.post(`/whatsapp/${newDeviceId}/connect`, payload);
+      }
+
       setModalOpen(true);
-      await fetchDeviceStatus(deviceId);
       await fetchDevices();
+      await fetchDeviceStatus(newDeviceId);
     } catch {
-      alert('Error reconnecting device');
+      alert('Error connecting device');
     }
   };
 
@@ -156,7 +180,7 @@ const WhatsApp = () => {
               <img src="/src/assets/logo.png" alt="Logo" />
             </div>
             <div>
-              <h1 className="header-title">TerimaWa</h1>
+              <h1 className="header-title">WainAja</h1>
               <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>WhatsApp</p>
             </div>
           </div>
@@ -170,7 +194,7 @@ const WhatsApp = () => {
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>WhatsApp</h2>
             <p style={{ fontSize: '0.8rem', color: '#636e72' }}>Kelola WhatsApp Anda untuk menerima pesan</p>
           </div>
-          <button className="btn-add-wa" onClick={handleAddDevice}>
+          <button className="btn-add-wa" onClick={startAddDevice}>
             <Plus size={18} /> Tambah WhatsApp
           </button>
         </div>
@@ -239,7 +263,7 @@ const WhatsApp = () => {
                   </div>
 
                   {device.status !== 'CONNECTED' ? (
-                    <button className="btn-add-wa" style={{ padding: '0.45rem 0.65rem' }} onClick={() => handleReconnectDevice(device.id)}>
+                    <button className="btn-add-wa" style={{ padding: '0.45rem 0.65rem' }} onClick={() => startReconnectDevice(device.id)}>
                       <RefreshCw size={14} /> Hubungkan
                     </button>
                   ) : (
@@ -279,15 +303,25 @@ const WhatsApp = () => {
                 <div style={{ color: '#00b894', fontWeight: 700, margin: '1rem 0' }}>
                   Terhubung{connectionInfo.phoneNumber ? `: +${connectionInfo.phoneNumber}` : ''}
                 </div>
+              ) : connectionInfo.pairingCode ? (
+                <div style={{ margin: '1.5rem 0' }}>
+                  <p style={{ color: '#636e72', fontSize: '0.9rem', marginBottom: '1rem' }}>Masukkan kode di bawah ini pada WhatsApp di ponsel Anda:</p>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '4px', background: '#f1f2f6', padding: '1rem', borderRadius: '8px', color: '#2d3436' }}>
+                    {connectionInfo.pairingCode}
+                  </div>
+                </div>
               ) : connectionInfo.qrCode ? (
                 <img src={connectionInfo.qrCode} alt="QR Code WhatsApp" style={{ width: '100%', maxWidth: '270px', margin: '0.5rem auto 1rem', display: 'block' }} />
               ) : (
-                <div style={{ padding: '1rem', color: '#636e72', fontSize: '0.85rem' }}>Menyiapkan QR Code, tunggu sebentar...</div>
+                <div style={{ padding: '1rem', color: '#636e72', fontSize: '0.85rem' }}>Menyiapkan Kode Autentikasi, tunggu sebentar...</div>
               )}
 
               <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
-                <button className="btn-add-wa" onClick={() => handleReconnectDevice(selectedDeviceId)}>
-                  <RefreshCw size={14} /> Refresh QR
+                <button className="btn-add-wa" onClick={() => {
+                  setModalOpen(false);
+                  startReconnectDevice(selectedDeviceId);
+                }}>
+                  <RefreshCw size={14} /> Refresh
                 </button>
                 <button
                   className="btn-blast"
@@ -297,6 +331,77 @@ const WhatsApp = () => {
                   }}
                 >
                   Tutup
+                </button>
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {methodModalOpen ? (
+          <div
+            style={{
+              position: 'fixed',
+              inset: 0,
+              background: 'rgba(0,0,0,0.45)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              zIndex: 999
+            }}
+          >
+            <div style={{ background: '#fff', borderRadius: '12px', width: 'min(92vw, 450px)', padding: '1.5rem', textAlign: 'left' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
+                <div style={{ background: '#e6fff9', color: '#00b894', padding: '0.5rem', borderRadius: '8px' }}>
+                  <Plus size={20} />
+                </div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>Tambah WhatsApp</h3>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#2d3436' }}>Pilih Metode Koneksi</h4>
+                
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1rem', border: `2px solid ${connectionMethod === 'qr' ? '#00b894' : '#eee'}`, borderRadius: '8px', cursor: 'pointer', marginBottom: '0.75rem', transition: 'all 0.2s' }}>
+                  <input type="radio" name="connMethod" checked={connectionMethod === 'qr'} onChange={() => setConnectionMethod('qr')} style={{ marginTop: '0.25rem' }} />
+                  <div>
+                    <div style={{ fontWeight: 700, color: '#2d3436' }}>QR Code</div>
+                    <div style={{ fontSize: '0.8rem', color: '#636e72', marginTop: '0.25rem' }}>Scan QR code dengan WhatsApp di ponsel Anda</div>
+                  </div>
+                </label>
+
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1rem', border: `2px solid ${connectionMethod === 'pairing' ? '#0984e3' : '#eee'}`, borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
+                  <input type="radio" name="connMethod" checked={connectionMethod === 'pairing'} onChange={() => setConnectionMethod('pairing')} style={{ marginTop: '0.25rem' }} />
+                  <div style={{ width: '100%' }}>
+                    <div style={{ fontWeight: 700, color: '#2d3436' }}>Pairing Code</div>
+                    <div style={{ fontSize: '0.8rem', color: '#636e72', marginTop: '0.25rem' }}>Masukkan kode pairing ke WhatsApp Anda.</div>
+                    
+                    {connectionMethod === 'pairing' && (
+                      <div style={{ marginTop: '1rem' }}>
+                        <input 
+                          type="text" 
+                          placeholder="Contoh: 62812345678" 
+                          value={phoneNumberInput}
+                          onChange={(e) => setPhoneNumberInput(e.target.value.replace(/\D/g, ''))}
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #dfe6e9', outline: 'none', fontSize: '0.9rem' }}
+                        />
+                        <div style={{ fontSize: '0.7rem', color: '#b2bec3', marginTop: '0.4rem' }}>Tanpa tanda (+) atau spasi. Mulai dengan kode negara.</div>
+                      </div>
+                    )}
+                  </div>
+                </label>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+                <button
+                  style={{ padding: '0.65rem 1.25rem', background: 'transparent', border: '1px solid #dfe6e9', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, color: '#636e72' }}
+                  onClick={() => setMethodModalOpen(false)}
+                >
+                  Batal
+                </button>
+                <button 
+                  style={{ padding: '0.65rem 1.25rem', background: '#00b894', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  onClick={submitConnection}
+                >
+                  Lanjut →
                 </button>
               </div>
             </div>

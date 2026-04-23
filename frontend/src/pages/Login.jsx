@@ -37,7 +37,7 @@ const Login = () => {
     <div className="glass-card">
       <div className="logo-wrapper">
         <div className="logo-box">
-          <img src="/src/assets/logo.png" alt="TerimaWa Logo" style={{ width: '40px', height: '40px' }} />
+          <img src="/src/assets/logo.png" alt="WainAja Logo" style={{ width: '40px', height: '40px' }} />
         </div>
       </div>
       <h1 className="title">Selamat Datang</h1>
@@ -74,7 +74,7 @@ const Login = () => {
 
         <div style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
           <ReCAPTCHA
-            sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" // Testing site key
+            sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
             onChange={(token) => setRecaptchaToken(token)}
           />
         </div>
@@ -104,7 +104,7 @@ const Login = () => {
       </Link>
 
       <div className="footer">
-        © 2025 TerimaWa. Platform WhatsApp Bisnis Terpercaya
+        © 2025 WainAja. Platform BY RIO CLOUD ID
       </div>
     </div>
   );

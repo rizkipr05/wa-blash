@@ -54,7 +54,7 @@ const Register = () => {
         </div>
       </div>
       <h1 className="title">Daftar Akun</h1>
-      <p className="subtitle">Buat akun TerimaWa Anda</p>
+      <p className="subtitle">Buat akun WainAja Anda</p>
 
       <form onSubmit={handleRegister}>
         <div className="form-group">
@@ -131,7 +131,7 @@ const Register = () => {
       </Link>
 
       <div className="footer">
-        © 2025 TerimaWa. Platform WhatsApp Bisnis Terpercaya
+        © 2025 TerimaWa. Platform  BY RIO CLOUD ID
       </div>
     </div>
   );
