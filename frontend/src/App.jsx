@@ -10,6 +10,11 @@ import Profile from './pages/Profile';
 
 import FloatingChat from './components/FloatingChat';
 
+import AdminRoute from './components/AdminRoute';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import AdminUsers from './pages/admin/AdminUsers';
+import AdminWithdrawals from './pages/admin/AdminWithdrawals';
+
 function App() {
   return (
     <Router>
@@ -31,6 +36,14 @@ function App() {
         <Route path="/referral" element={<Referral />} />
         <Route path="/withdraw" element={<Withdraw />} />
         <Route path="/profile" element={<Profile />} />
+        
+        {/* Admin Routes */}
+        <Route element={<AdminRoute />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/users" element={<AdminUsers />} />
+          <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
+        </Route>
+
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
       <FloatingChat />

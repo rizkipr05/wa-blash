@@ -68,9 +68,10 @@ exports.getDashboardStats = async (req, res) => {
     const deviceCount = await prisma.whatsappDevice.count({ where: { userId } });
     const activeDeviceCount = await prisma.whatsappDevice.count({ where: { userId, status: 'CONNECTED' } });
     const referralCount = await prisma.user.count({ where: { referredBy: userId } });
-    const user = await prisma.user.findUnique({ where: { id: userId }, select: { balance: true } });
+    const user = await prisma.user.findUnique({ where: { id: userId }, select: { balance: true, role: true } });
 
     res.json({
+      user: { role: user.role }, // Adding this for Admin access
       balance: user.balance,
       totalDevices: deviceCount,
       activeDevices: activeDeviceCount,

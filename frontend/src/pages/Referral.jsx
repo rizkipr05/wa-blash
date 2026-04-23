@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { 
-  LogOut, 
-  Users, 
-  DollarSign, 
-  Copy, 
-  Lightbulb, 
-  User, 
-  Home, 
-  MessageSquare, 
+import {
+  LogOut,
+  Users,
+  DollarSign,
+  Copy,
+  Lightbulb,
+  User,
+  Home,
+  MessageSquare,
   Wallet,
   Zap
 } from 'lucide-react';

@@ -1,19 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
-import { 
-  LogOut, 
-  CheckCircle, 
-  XCircle, 
-  Send, 
-  DollarSign, 
-  CreditCard, 
-  Download, 
-  PlusCircle, 
-  MessageSquare, 
-  Users, 
-  User, 
-  Home, 
+import {
+  LogOut,
+  CheckCircle,
+  XCircle,
+  Send,
+  DollarSign,
+  CreditCard,
+  Download,
+  PlusCircle,
+  MessageSquare,
+  Users,
+  User,
+  Home,
   Wallet,
   TrendingUp,
   Zap,
@@ -61,6 +61,10 @@ const Dashboard = () => {
     { label: 'Withdraw', icon: <Wallet size={20} />, path: '/withdraw' },
     { label: 'Profil', icon: <User size={20} />, path: '/profile' },
   ];
+
+  if (stats && stats.user && stats.user.role === 'ADMIN') {
+    navItems.push({ label: 'Admin', icon: <Monitor size={20} />, path: '/admin' });
+  }
 
   return (
     <div className="dashboard-container">
