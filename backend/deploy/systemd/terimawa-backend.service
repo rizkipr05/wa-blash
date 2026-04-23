@@ -1,0 +1,18 @@
+[Unit]
+Description=TerimaWa Backend Service
+After=network.target
+
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/opt/lampp/htdocs/wa-blash/backend
+EnvironmentFile=/opt/lampp/htdocs/wa-blash/backend/.env
+ExecStart=/usr/bin/node /opt/lampp/htdocs/wa-blash/backend/src/app.js
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/terimawa/backend-out.log
+StandardError=append:/var/log/terimawa/backend-error.log
+
+[Install]
+WantedBy=multi-user.target

@@ -65,8 +65,8 @@ exports.changePassword = async (req, res) => {
 exports.getDashboardStats = async (req, res) => {
   try {
     const userId = req.user.id;
-    const deviceCount = await prisma.whatsappDevice.count({ where: { userId } });
-    const activeDeviceCount = await prisma.whatsappDevice.count({ where: { userId, status: 'CONNECTED' } });
+    const deviceCount = await prisma.whatsAppDevice.count({ where: { userId } });
+    const activeDeviceCount = await prisma.whatsAppDevice.count({ where: { userId, status: 'CONNECTED' } });
     const referralCount = await prisma.user.count({ where: { referredBy: userId } });
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { balance: true, role: true } });
 

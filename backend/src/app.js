@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
 const whatsappRoutes = require('./routes/whatsappRoutes');
 const financeRoutes = require('./routes/financeRoutes');
+const { bootstrapConnectedDevices } = require('./services/whatsappService');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -27,4 +28,10 @@ app.get('/', (req, res) => {
 
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
+  if (process.env.NODE_ENV === 'production' && !process.env.WA_SESSION_DIR) {
+    console.warn('WA_SESSION_DIR is not set. Set it to a protected path outside public web directories.');
+  }
+  bootstrapConnectedDevices().catch((error) => {
+    console.error('Failed to bootstrap WhatsApp sessions:', error.message);
+  });
 });

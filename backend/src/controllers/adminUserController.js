@@ -46,7 +46,7 @@ exports.deleteUser = async (req, res) => {
   const { id } = req.params;
   try {
     // Delete related records first to maintain referential integrity
-    await prisma.whatsappDevice.deleteMany({ where: { userId: parseInt(id) } });
+    await prisma.whatsAppDevice.deleteMany({ where: { userId: parseInt(id) } });
     await prisma.withdrawal.deleteMany({ where: { userId: parseInt(id) } });
     await prisma.transaction.deleteMany({ where: { userId: parseInt(id) } });
     

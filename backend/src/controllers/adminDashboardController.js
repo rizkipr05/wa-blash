@@ -5,8 +5,8 @@ const prisma = new PrismaClient();
 exports.getAdminStats = async (req, res) => {
   try {
     const totalUsers = await prisma.user.count({ where: { role: 'USER' } });
-    const totalDevices = await prisma.whatsappDevice.count();
-    const activeDevices = await prisma.whatsappDevice.count({ where: { status: 'CONNECTED' } });
+    const totalDevices = await prisma.whatsAppDevice.count();
+    const activeDevices = await prisma.whatsAppDevice.count({ where: { status: 'CONNECTED' } });
     
     const pendingWithdrawals = await prisma.withdrawal.count({ where: { status: 'PENDING' } });
     const pendingWithdrawalsSum = await prisma.withdrawal.aggregate({
