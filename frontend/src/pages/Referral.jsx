@@ -69,7 +69,7 @@ const Referral = () => {
               <img src="/src/assets/logo.png" alt="Logo" />
             </div>
             <div>
-              <h1 className="header-title">TerimaWa</h1>
+              <h1 className="header-title">WainAja</h1>
               <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>Program Referral</p>
             </div>
           </div>
