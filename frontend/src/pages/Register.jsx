@@ -3,14 +3,23 @@ import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, ArrowRight, ShieldCheck } from 'lucide-react';
 import axios from 'axios';
 import ReCAPTCHA from 'react-google-recaptcha';
+import PopupModal from '../components/PopupModal';
 
 const Register = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [recaptchaToken, setRecaptchaToken] = useState(null);
-  const [error, setError] = useState('');
+  const [modalCtx, setModalCtx] = useState({ isOpen: false, type: 'success', title: '', message: '' });
   const navigate = useNavigate();
+
+  const handleCloseModal = () => {
+    if (modalCtx.type === 'success') {
+      navigate('/login');
+    } else {
+      setModalCtx({ ...modalCtx, isOpen: false });
+    }
+  };
 
   const validatePassword = (pw) => {
     const regex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
@@ -20,15 +29,15 @@ const Register = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     if (!validatePassword(password)) {
-      setError('Password must be at least 8 characters long and include uppercase, lowercase, numbers, and special characters.');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Kata Sandi Lemah', message: 'Kata sandi minimal 8 karakter dan harus mengandung huruf besar, huruf kecil, angka, serta simbol khusus.' });
       return;
     }
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Kata Sandi Tidak Cocok', message: 'Tolong pastikan kolom konfirmasi kata sandi sama persis dengan kata sandi Anda.' });
       return;
     }
     if (!recaptchaToken) {
-      setError('Please complete the reCAPTCHA');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Aksi Ditolak', message: 'Harap selesaikan reCAPTCHA sebelum mendaftar.' });
       return;
     }
     try {
@@ -37,10 +46,9 @@ const Register = () => {
         password,
         recaptchaToken 
       });
-      alert('Registration successful! Please login.');
-      navigate('/login');
+      setModalCtx({ isOpen: true, type: 'success', title: 'Registrasi Berhasil!', message: 'Akun Anda sudah selesai dibentuk. Silakan lanjut ke halaman masuk.' });
     } catch (err) {
-      setError(err.response?.data?.message || 'Something went wrong');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Gagal Mendaftar', message: err.response?.data?.message || 'Terjadi kesalahan sistem, silakan coba lagi.' });
     }
   };
 
@@ -110,8 +118,6 @@ const Register = () => {
             Harap verifikasi bahwa Anda bukan robot
         </p>
 
-        {error && <p style={{ color: '#ef4444', fontSize: '0.875rem', marginBottom: '1rem', textAlign: 'center' }}>{error}</p>}
-
         <button 
           type="submit" 
           className={`btn ${isFormValid && recaptchaToken ? 'btn-primary' : ''}`}
@@ -133,6 +139,13 @@ const Register = () => {
       <div className="footer">
         © 2025 TerimaWa. Platform  BY RIO CLOUD ID
       </div>
+      <PopupModal 
+        isOpen={modalCtx.isOpen} 
+        type={modalCtx.type} 
+        title={modalCtx.title} 
+        message={modalCtx.message} 
+        onClose={handleCloseModal} 
+      />
     </div>
   );
 };

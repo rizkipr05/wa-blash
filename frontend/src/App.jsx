@@ -7,13 +7,16 @@ import WhatsApp from './pages/WhatsApp';
 import Referral from './pages/Referral';
 import Withdraw from './pages/Withdraw';
 import Profile from './pages/Profile';
-
 import FloatingChat from './components/FloatingChat';
 
 import AdminRoute from './components/AdminRoute';
+import AdminLayout from './components/AdminLayout';
+import AdminLogin from './pages/admin/AdminLogin';
 import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminWithdrawals from './pages/admin/AdminWithdrawals';
+import AdminProfile from './pages/admin/AdminProfile';
+import AdminTemplate from './pages/admin/AdminTemplate';
 
 function App() {
   return (
@@ -31,6 +34,14 @@ function App() {
             <Register />
           </div>
         } />
+        
+        {/* Admin Login Portal */}
+        <Route path="/admin-login" element={
+          <div className="auth-layout" style={{ background: '#2d3436' }}>
+            <div className="bg-wave" style={{ background: 'linear-gradient(135deg, #d63031 0%, #2d3436 100%)' }}></div>
+            <AdminLogin />
+          </div>
+        } />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/whatsapp" element={<WhatsApp />} />
         <Route path="/referral" element={<Referral />} />
@@ -39,9 +50,13 @@ function App() {
         
         {/* Admin Routes */}
         <Route element={<AdminRoute />}>
-          <Route path="/admin" element={<AdminDashboard />} />
-          <Route path="/admin/users" element={<AdminUsers />} />
-          <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
+          <Route element={<AdminLayout />}>
+            <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsers />} />
+            <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
+            <Route path="/admin/profile" element={<AdminProfile />} />
+            <Route path="/admin/template" element={<AdminTemplate />} />
+          </Route>
         </Route>
 
         <Route path="/" element={<Navigate to="/login" />} />

@@ -13,6 +13,16 @@ const SESSION_ROOT = process.env.WA_SESSION_DIR
 const LOGGER = pino({ level: process.env.WA_LOG_LEVEL || 'info' });
 const sessions = new Map();
 
+const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+const formatWhatsAppNumber = (number) => {
+  let cleaned = String(number).replace(/\D/g, '');
+  if (cleaned.startsWith('0')) {
+    cleaned = '62' + cleaned.substring(1);
+  }
+  return cleaned + '@s.whatsapp.net';
+};
+
 const ensureSessionRoot = async () => {
   await fs.promises.mkdir(SESSION_ROOT, { recursive: true, mode: 0o700 });
   await fs.promises.chmod(SESSION_ROOT, 0o700);
@@ -250,10 +260,120 @@ const bootstrapConnectedDevices = async () => {
   }
 };
 
+const blastMessages = async (deviceId, targets, message, speed, imageUrl, firewall) => {
+  const runtime = getSessionState(deviceId);
+  if (!runtime || !runtime.sock) {
+    throw new Error('Device is not connected');
+  }
+  
+  if (!targets || !Array.isArray(targets) || targets.length === 0) return;
+
+  setImmediate(async () => {
+    try {
+      const deviceRecord = await prisma.whatsAppDevice.findUnique({ where: { id: deviceId } });
+      let sentToday = deviceRecord.messagesSentToday || 0;
+      const lastSent = deviceRecord.lastSentDate;
+      const todayString = new Date().toDateString();
+      
+      if (lastSent && new Date(lastSent).toDateString() !== todayString) {
+        sentToday = 0; // reset
+      }
+
+      let messagesSentInCurrentBatch = 0;
+      let failCount = 0;
+      let evalCount = 0;
+
+      for (let i = 0; i < targets.length; i++) {
+        // Firewall: Daily Limit Check
+        if (sentToday >= firewall.dailyLimit) {
+          LOGGER.warn({ deviceId, limit: firewall.dailyLimit }, 'Anti-Ban: Daily message limit reached. Suspending campaign!');
+          break;
+        }
+
+        // Firewall: Batch Warm-Up Delay
+        if (messagesSentInCurrentBatch > 0 && messagesSentInCurrentBatch % firewall.batchSize === 0) {
+          LOGGER.info({ deviceId, delayMin: firewall.batchDelayMinutes }, 'Anti-Ban: Batch size reached. Entering warm-up rest state...');
+          await sleep(firewall.batchDelayMinutes * 60 * 1000); // Minutes to MS
+        }
+
+        messagesSentInCurrentBatch++;
+        evalCount++;
+        let deliverySuccess = false;
+
+        try {
+          const jid = formatWhatsAppNumber(targets[i]);
+          const exists = await runtime.sock.onWhatsApp(jid);
+          if (exists && exists.length > 0) {
+            if (imageUrl) {
+              const absolutePath = path.join(__dirname, '../../', imageUrl);
+              await runtime.sock.sendMessage(exists[0].jid, { image: { url: absolutePath }, caption: message });
+            } else {
+              await runtime.sock.sendMessage(exists[0].jid, { text: message });
+            }
+            LOGGER.info({ deviceId, target: targets[i] }, 'Blast message sent successfully');
+            deliverySuccess = true;
+          } else {
+            LOGGER.warn({ deviceId, target: targets[i] }, 'Target number is not registered on WhatsApp');
+          }
+        } catch (err) {
+          LOGGER.error({ deviceId, target: targets[i], err: err.message }, 'Failed to send blast message');
+        }
+
+        if (deliverySuccess) {
+          sentToday++;
+        } else {
+          failCount++;
+        }
+
+        // Periodically update DB state to maintain limit precision across restarts
+        if (deliverySuccess && sentToday % 10 === 0) {
+          await prisma.whatsAppDevice.update({
+            where: { id: deviceId },
+            data: { messagesSentToday: sentToday, lastSentDate: new Date() }
+          });
+        }
+
+        // Firewall: Failure Rate Auto-Killswitch
+        if (evalCount >= 10) {
+          const errorRate = (failCount / evalCount) * 100;
+          if (errorRate >= firewall.failureLimitPercent) {
+            LOGGER.error({ deviceId, errorRate }, 'Anti-Ban: Massive Delivery Failure Rate Hit! Automatically shutting down campaign to prevent Whatsapp ban.');
+            break;
+          }
+        }
+
+        if (i < targets.length - 1) {
+          let minDelay, maxDelay;
+          if (speed === 'fast') {
+            minDelay = 500; maxDelay = 1000;
+          } else if (speed === 'slow') {
+            minDelay = 4000; maxDelay = 7000;
+          } else {
+            minDelay = 2000; maxDelay = 3000;
+          }
+          const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
+          await sleep(delay);
+        }
+      }
+
+      // Final db update for sent counts
+      await prisma.whatsAppDevice.update({
+        where: { id: deviceId },
+        data: { messagesSentToday: sentToday, lastSentDate: new Date() }
+      });
+
+      LOGGER.info({ deviceId, totalSent: sentToday }, 'Blast campaign sequence finished.');
+    } catch (criticalError) {
+      LOGGER.error({ deviceId, error: criticalError.message }, 'Critical error executing blast sequence');
+    }
+  });
+};
+
 module.exports = {
   connectDevice,
   getDeviceStatus,
   disconnectDevice,
   destroyDeviceSession,
-  bootstrapConnectedDevices
+  bootstrapConnectedDevices,
+  blastMessages
 };

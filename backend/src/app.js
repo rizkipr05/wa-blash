@@ -5,6 +5,7 @@ const authRoutes = require('./routes/auth');
 const userRoutes = require('./routes/userRoutes');
 const whatsappRoutes = require('./routes/whatsappRoutes');
 const financeRoutes = require('./routes/financeRoutes');
+const path = require('path');
 const { bootstrapConnectedDevices } = require('./services/whatsappService');
 
 const app = express();
@@ -12,6 +13,7 @@ const port = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 const adminRoutes = require('./routes/adminRoutes');
 

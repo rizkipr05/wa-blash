@@ -17,7 +17,8 @@ import {
   Wallet,
   TrendingUp,
   Zap,
-  Sparkles
+  Sparkles,
+  Monitor
 } from 'lucide-react';
 
 const Dashboard = () => {
@@ -148,7 +149,7 @@ const Dashboard = () => {
             </div>
             <div className="info-row">
               <span className="info-label">Kode Komisi</span>
-              <span className="info-value" style={{ color: '#fdcb6e' }}>Rp50</span>
+              <span className="info-value" style={{ color: '#fdcb6e' }}>Rp{stats?.settings?.referral_commission || '50'}</span>
             </div>
           </div>
 
@@ -159,11 +160,11 @@ const Dashboard = () => {
             </div>
             <div className="info-row">
               <span className="info-label">Rate per pesan</span>
-              <span className="info-value">Rp400</span>
+              <span className="info-value">Rp{stats?.settings?.msg_rate || '400'}</span>
             </div>
             <div className="info-row">
               <span className="info-label">Min withdraw</span>
-              <span className="info-value">Rp10.000</span>
+              <span className="info-value">Rp{Number(stats?.settings?.min_withdraw || 10000).toLocaleString('id-ID')}</span>
             </div>
             <div className="info-row">
               <span className="info-label">Member sejak</span>

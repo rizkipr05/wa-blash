@@ -16,6 +16,7 @@ exports.getProfile = async (req, res) => {
         accountHolder: true,
         referralCode: true,
         rank: true,
+        role: true,
         isTelegramConnected: true,
         createdAt: true
       }
@@ -69,6 +70,13 @@ exports.getDashboardStats = async (req, res) => {
     const activeDeviceCount = await prisma.whatsAppDevice.count({ where: { userId, status: 'CONNECTED' } });
     const referralCount = await prisma.user.count({ where: { referredBy: userId } });
     const user = await prisma.user.findUnique({ where: { id: userId }, select: { balance: true, role: true } });
+    
+    // Fetch Global Settings
+    const settingsRaw = await prisma.systemSetting.findMany();
+    const settings = settingsRaw.reduce((acc, curr) => {
+      acc[curr.key] = curr.value;
+      return acc;
+    }, { msg_rate: '400', referral_commission: '50', min_withdraw: '10000' }); // defaults
 
     res.json({
       user: { role: user.role }, // Adding this for Admin access
@@ -76,7 +84,8 @@ exports.getDashboardStats = async (req, res) => {
       totalDevices: deviceCount,
       activeDevices: activeDeviceCount,
       totalReferrals: referralCount,
-      totalEarnings: 0 // In a real app, calculate from transactions
+      totalEarnings: 0, // In a real app, calculate from transactions
+      settings
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching stats', error: error.message });

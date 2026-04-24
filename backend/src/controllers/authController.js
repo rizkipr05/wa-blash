@@ -38,7 +38,7 @@ exports.register = async (req, res) => {
 
     const existingUser = await prisma.user.findUnique({ where: { username } });
     if (existingUser) {
-      return res.status(400).json({ message: 'Username already exists' });
+      return res.status(400).json({ message: 'Username ini sudah digunakan oleh orang lain. Silakan pilih username yang berbeda!' });
     }
 
     // Handle Referrer
@@ -84,5 +84,30 @@ exports.login = async (req, res) => {
     res.json({ message: 'Login successful', token, username: user.username });
   } catch (error) {
     res.status(500).json({ message: 'Error logging in', error: error.message });
+  }
+};
+
+exports.adminLogin = async (req, res) => {
+  const { username, password } = req.body;
+
+  try {
+    const user = await prisma.user.findUnique({ where: { username } });
+    if (!user) {
+      return res.status(400).json({ message: 'Kombinasi Username & Password Admin tidak valid' });
+    }
+
+    if (user.role !== 'ADMIN') {
+      return res.status(403).json({ message: 'Akses Ditolak: Akun Anda bukan Administrator!' });
+    }
+
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(400).json({ message: 'Kombinasi Username & Password Admin tidak valid' });
+    }
+
+    const token = jwt.sign({ id: user.id, username: user.username }, process.env.JWT_SECRET, { expiresIn: '24h' });
+    res.json({ message: 'Selamat datang, Administrator!', token, username: user.username });
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in admin', error: error.message });
   }
 };

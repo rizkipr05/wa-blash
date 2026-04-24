@@ -1,15 +1,15 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --primary: #00b894;
-  --primary-dark: #00a082;
-  --primary-light: #55efc4;
-  --bg-gradient: linear-gradient(135deg, #e6fff9 0%, #c1fcef 100%);
-  --text-main: #2d3436;
-  --text-muted: #636e72;
+  --primary: #2563eb;
+  --primary-dark: #1e40af;
+  --primary-light: #60a5fa;
+  --bg-gradient: linear-gradient(135deg, #eff6ff 0%, #bfdbfe 100%);
+  --text-main: #0f172a;
+  --text-muted: #64748b;
   --white: #ffffff;
   --card-bg: rgba(255, 255, 255, 0.95);
-  --shadow: 0 10px 25px -5px rgba(0, 184, 148, 0.1), 0 8px 10px -6px rgba(0, 184, 148, 0.1);
+  --shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.1), 0 8px 10px -6px rgba(37, 99, 235, 0.1);
   --radius-lg: 24px;
   --radius-md: 12px;
 }
@@ -77,12 +77,12 @@ body {
 .logo-box {
   width: 64px;
   height: 64px;
-  background: #25d366;
+  background: var(--primary);
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 16px rgba(37, 211, 102, 0.2);
+  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
 }
 
 .logo-box img {
@@ -120,8 +120,8 @@ body {
 input, select {
   width: 100%;
   padding: 0.875rem 1rem 0.875rem 1rem;
-  background: #f1fcf9;
-  border: 1px solid #e0f2f1;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
   border-radius: var(--radius-md);
   font-size: 0.95rem;
   outline: none;
@@ -130,7 +130,7 @@ input, select {
 
 input:focus, select:focus {
   border-color: var(--primary);
-  box-shadow: 0 0 0 3px rgba(0, 184, 148, 0.1);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
   background: white;
 }
 
@@ -197,7 +197,7 @@ input:focus, select:focus {
 .dashboard-container {
   display: flex;
   min-height: 100vh;
-  background: #f0f7f5;
+  background: #f8fafc;
 }
 
 .dashboard-main {
@@ -475,3 +475,22 @@ input:focus, select:focus {
 .withdraw-grid { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
 @media (min-width: 992px) { .withdraw-grid { grid-template-columns: 1fr 1fr; } }
 .btn-config { background: #0984e3; color: white; border: none; padding: 0.65rem 1rem; border-radius: 8px; font-weight: 700; cursor: pointer; margin-top: 1rem; display: flex; align-items: center; gap: 0.5rem; }
+
+/* Admin Layout Sidebar */
+.admin-layout-container { display: flex; min-height: 100vh; background: #f0f2f5; }
+.admin-sidebar { width: 260px; background: white; border-right: 1px solid #e2e8f0; display: flex; flex-direction: column; position: fixed; top: 0; left: 0; height: 100vh; z-index: 1000; box-shadow: 2px 0 10px rgba(0,0,0,0.02); }
+.admin-sidebar-header { padding: 1.5rem; display: flex; align-items: center; gap: 0.75rem; border-bottom: 2px solid #ff7675; }
+.admin-nav { padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 0.5rem; flex: 1; }
+.admin-nav-item { display: flex; align-items: center; gap: 0.75rem; padding: 0.85rem 1rem; border-radius: 8px; color: #636e72; text-decoration: none; font-weight: 600; transition: all 0.2s; }
+.admin-nav-item:hover, .admin-nav-item.active { background: #eff6ff; color: #2563eb; }
+.admin-main-content { flex: 1; margin-left: 260px; padding: 2.5rem; }
+
+/* Modal Animations */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes scaleUp {
+  0% { transform: scale(0.9) translateY(10px); opacity: 0; }
+  100% { transform: scale(1) translateY(0); opacity: 1; }
+}

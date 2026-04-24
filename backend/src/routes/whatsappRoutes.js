@@ -9,5 +9,6 @@ router.post('/:id/connect', authMiddleware, whatsappController.connectDevice);
 router.get('/:id/status', authMiddleware, whatsappController.getDeviceStatus);
 router.post('/:id/disconnect', authMiddleware, whatsappController.disconnectDevice);
 router.delete('/:id', authMiddleware, whatsappController.deleteDevice);
+router.post('/blast', authMiddleware, whatsappController.sendBlast);
 
 module.exports = router;

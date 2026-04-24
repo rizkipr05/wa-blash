@@ -16,6 +16,7 @@ exports.getAdminStats = async (req, res) => {
 
     const recentUsers = await prisma.user.findMany({
       take: 5,
+      where: { role: 'USER' },
       orderBy: { createdAt: 'desc' },
       select: { id: true, username: true, createdAt: true, rank: true }
     });

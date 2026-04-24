@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Lock, ArrowRight } from 'lucide-react';
+import { User, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
 import axios from 'axios';
 import ReCAPTCHA from 'react-google-recaptcha';
-import PopupModal from '../components/PopupModal';
+import PopupModal from '../../components/PopupModal';
 
-const Login = () => {
+const AdminLogin = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [modalCtx, setModalCtx] = useState({ isOpen: false, type: 'success', title: '', message: '' });
@@ -14,7 +14,7 @@ const Login = () => {
 
   const handleCloseModal = () => {
     if (modalCtx.type === 'success') {
-      navigate('/dashboard');
+      navigate('/admin');
     } else {
       setModalCtx({ ...modalCtx, isOpen: false });
     }
@@ -23,42 +23,42 @@ const Login = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     if (!recaptchaToken) {
-      setModalCtx({ isOpen: true, type: 'error', title: 'Aksi Ditolak', message: 'Tolong selesaikan validasi reCAPTCHA terlebih dahulu sebelum masuk.' });
+      setModalCtx({ isOpen: true, type: 'error', title: 'Verifikasi Robot', message: 'Harap selesaikan kotak reCAPTCHA terlebih dahulu sebelum masuk.' });
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/login', {
+      const response = await axios.post('http://localhost:3000/api/auth/admin-login', {
         username,
         password,
         recaptchaToken
       });
       localStorage.setItem('token', response.data.token);
-      setModalCtx({ isOpen: true, type: 'success', title: 'Login Berhasil', message: `Selamat datang kembali, ${username}! Memuat dashboard Anda...` });
+      setModalCtx({ isOpen: true, type: 'success', title: 'Portal Terbuka', message: 'Kredensial Admin dikonfirmasi, mengarahkan ke dashboard administrasi...' });
     } catch (err) {
-      setModalCtx({ isOpen: true, type: 'error', title: 'Akses Gagal', message: err.response?.data?.message || 'Kredensial tidak valid atau kesalahan server.' });
+      setModalCtx({ isOpen: true, type: 'error', title: 'Akses Ditolak', message: err.response?.data?.message || 'Gagal masuk sebagai Admin. Pastikan kredensial benar.' });
     }
   };
 
   const isFormValid = username.length > 0 && password.length > 0;
 
   return (
-    <div className="glass-card">
+    <div className="glass-card" style={{ borderTop: '4px solid #d63031' }}>
       <div className="logo-wrapper">
-        <div className="logo-box">
-          <img src="/src/assets/logo.png" alt="WainAja Logo" style={{ width: '40px', height: '40px' }} />
+        <div className="logo-box" style={{ background: '#ff7675' }}>
+          <ShieldAlert size={28} color="white" />
         </div>
       </div>
-      <h1 className="title">Selamat Datang</h1>
-      <p className="subtitle">Masuk ke Platform WainAja</p>
+      <h1 className="title" style={{ color: '#d63031' }}>Portal Administrator</h1>
+      <p className="subtitle">Sistem Manajemen WainAja</p>
 
       <form onSubmit={handleLogin}>
         <div className="form-group">
-          <label className="form-label">Username</label>
+          <label className="form-label">Username Admin</label>
           <div className="input-container">
-            <User className="input-icon" size={20} />
+            <User className="input-icon" size={20} color="#d63031" />
             <input
               type="text"
-              placeholder="pratama"
+              placeholder="Username administrator..."
               value={username}
               onChange={(e) => setUsername(e.target.value)}
               required
@@ -67,9 +67,9 @@ const Login = () => {
         </div>
 
         <div className="form-group">
-          <label className="form-label">Password</label>
+          <label className="form-label">Kata Sandi</label>
           <div className="input-container">
-            <Lock className="input-icon" size={20} />
+            <Lock className="input-icon" size={20} color="#d63031" />
             <input
               type="password"
               placeholder="••••••••"
@@ -87,30 +87,26 @@ const Login = () => {
           />
         </div>
 
-        <p style={{ fontSize: '11px', color: '#718096', marginBottom: '1.5rem', textAlign: 'center' }}>
-          Harap verifikasi bahwa Anda bukan robot
-        </p>
-
         <button
           type="submit"
           className={`btn ${isFormValid && recaptchaToken ? 'btn-primary' : ''}`}
-          style={!(isFormValid && recaptchaToken) ? { background: '#cbd5e0', cursor: 'not-allowed', color: 'white' } : {}}
+          style={isFormValid && recaptchaToken ? { background: '#d63031' } : { background: '#cbd5e0', cursor: 'not-allowed', color: 'white' }}
           disabled={!isFormValid || !recaptchaToken}
         >
-          Masuk Sekarang <ArrowRight size={18} />
+          Akses Portal <ArrowRight size={18} />
         </button>
       </form>
 
       <div className="divider">
-        <span>Belum punya akun?</span>
+        <span>Bukan Administrator?</span>
       </div>
 
-      <Link to="/register" className="btn btn-secondary">
-        Daftar Sekarang
+      <Link to="/login" className="btn btn-secondary">
+        Kembali ke Login User
       </Link>
 
       <div className="footer">
-        © 2025 WainAja. Platform BY RIO CLOUD ID
+        © 2025 WainAja | PROTECTED AREA
       </div>
       <PopupModal 
         isOpen={modalCtx.isOpen} 
@@ -123,4 +119,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default AdminLogin;
