@@ -50,7 +50,7 @@ const AdminLogin = () => {
           </div>
         </div>
         <h1 className="title" style={{ color: '#0984e3' }}>Portal Administrator</h1>
-        <p className="subtitle">Sistem Manajemen WainAja</p>
+        <p className="subtitle">Sistem Manajemen setorwa-der.com</p>
 
         <form onSubmit={handleLogin}>
           <div className="form-group">
@@ -115,7 +115,7 @@ const AdminLogin = () => {
         />
       </div>
       <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
-        © 2025 WainAja | PROTECTED AREA
+        © 2025 setorwa-der.com | PROTECTED AREA
       </div>
     </div>
   );

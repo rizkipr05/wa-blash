@@ -76,7 +76,7 @@ const Dashboard = () => {
               <img src="/src/assets/logo.png" alt="Logo" />
             </div>
             <div>
-              <h1 className="header-title">WainAja</h1>
+              <h1 className="header-title">setorwa-der.com</h1>
               <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Dashboard</p>
             </div>
           </div>
@@ -91,7 +91,7 @@ const Dashboard = () => {
               <Sparkles size={20} color="#00b894" />
               <h2 style={{ margin: 0 }}>Halo, {localStorage.getItem('username') || 'Member'}!</h2>
             </div>
-            <p>Selamat datang di dashboard WainAja</p>
+            <p>Selamat datang di dashboard setorwa-der.com</p>
           </div>
           <TrendingUp color="#00b894" size={32} opacity={0.2} />
         </div>

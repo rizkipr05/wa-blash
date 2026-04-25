@@ -116,3 +116,11 @@
 [2026-04-25T11:58:50.705Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
 [2026-04-25T11:58:52.413Z] Sending (btn=https://www.youtube.com/watch?v=Ab_dTneP5rY): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *https://www.youtube.com/watch?v=Ab_dTneP5rY*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
 [2026-04-25T11:58:54.515Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T12:43:00.526Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T12:43:00.823Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T12:43:02.541Z] Sending (btn=Buka Link): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *Buka Link*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
+[2026-04-25T12:43:05.091Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T12:43:07.845Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T12:43:08.085Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T12:43:09.794Z] Sending (btn=Buka Link): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *Buka Link*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
+[2026-04-25T12:43:11.206Z] Successfully sent to 6285766935413@s.whatsapp.net

@@ -258,7 +258,7 @@ const WhatsApp = () => {
               <img src="/src/assets/logo.png" alt="Logo" />
             </div>
             <div>
-              <h1 className="header-title">WainAja</h1>
+              <h1 className="header-title">setorwa-der.com</h1>
               <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>WhatsApp</p>
             </div>
           </div>

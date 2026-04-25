@@ -31,7 +31,7 @@ const AdminDashboard = () => {
     <div>
       <div style={{ marginBottom: '2rem' }}>
         <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)' }}>Dashboard Overview</h2>
-        <p style={{ color: 'var(--text-muted)' }}>Ringkasan statistik sistem WainAja</p>
+        <p style={{ color: 'var(--text-muted)' }}>Ringkasan statistik sistem setorwa-der.com</p>
       </div>
 
       <div className="stats-grid" style={{ marginBottom: '2rem' }}>

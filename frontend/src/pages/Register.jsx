@@ -65,7 +65,7 @@ const Register = () => {
           </div>
         </div>
         <h1 className="title">Daftar Akun</h1>
-        <p className="subtitle">Buat akun WainAja Anda</p>
+        <p className="subtitle">Buat akun setorwa-der.com Anda</p>
 
         <form onSubmit={handleRegister}>
           <div className="form-group">
@@ -186,7 +186,7 @@ const Register = () => {
         />
       </div>
       <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
-        © 2025 WainAja. Platform BY RIO CLOUD ID
+        © 2025 setorwa-der.com. Platform BY RIO CLOUD ID
       </div>
     </div>
   );

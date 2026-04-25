@@ -46,11 +46,11 @@ const Login = () => {
       <div className="glass-card">
         <div className="logo-wrapper">
           <div className="logo-box">
-            <img src="/src/assets/logo.png" alt="WainAja Logo" style={{ width: '40px', height: '40px' }} />
+            <img src="/src/assets/logo.png" alt="setorwa-der.com Logo" style={{ width: '40px', height: '40px' }} />
           </div>
         </div>
         <h1 className="title">Selamat Datang</h1>
-        <p className="subtitle">Masuk ke Platform WainAja</p>
+        <p className="subtitle">Masuk ke Platform setorwa-der.com</p>
 
         <form onSubmit={handleLogin}>
           <div className="form-group">
@@ -119,7 +119,7 @@ const Login = () => {
         />
       </div>
       <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
-        © 2025 WainAja. Platform BY RIO CLOUD ID
+        © 2025 setorwa-der.com. Platform BY RIO CLOUD ID
       </div>
     </div>
   );
