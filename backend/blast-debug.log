@@ -84,3 +84,35 @@
   "caption": "Halo, ini pesan dari sistem buat test\n\n🔗 *https://www.youtube.com/watch?v=Ab_dTneP5rY*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY"
 }
 [2026-04-25T10:04:09.587Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T11:33:36.218Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T11:33:36.488Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T11:33:40.243Z] Sending CTA button (text=https://www.youtube.com/watch?v=Ab_dTneP5rY, url=https://www.youtube.com/watch?v=Ab_dTneP5rY)
+[2026-04-25T11:33:40.291Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T11:33:42.376Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T11:33:42.749Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T11:33:46.130Z] Sending CTA button (text=https://www.youtube.com/watch?v=Ab_dTneP5rY, url=https://www.youtube.com/watch?v=Ab_dTneP5rY)
+[2026-04-25T11:33:46.166Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T11:37:50.455Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T11:37:50.815Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T11:37:52.522Z] Sending (btn=Buka Link): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *Buka Link*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
+[2026-04-25T11:37:55.326Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T11:37:58.311Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T11:37:58.667Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T11:38:00.375Z] Sending (btn=Buka Link): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *Buka Link*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
+[2026-04-25T11:38:02.532Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T11:39:31.336Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T11:39:31.674Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T11:39:33.385Z] Sending (btn=none): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n🔗 https://www.youtube.com/watch?v=Ab_dTneP5rY"}
+[2026-04-25T11:39:33.952Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T11:39:36.094Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T11:39:36.488Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T11:39:38.192Z] Sending (btn=none): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n🔗 https://www.youtube.com/watch?v=Ab_dTneP5rY"}
+[2026-04-25T11:39:38.660Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T11:58:43.226Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T11:58:43.533Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T11:58:45.251Z] Sending (btn=https://www.youtube.com/watch?v=Ab_dTneP5rY): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *https://www.youtube.com/watch?v=Ab_dTneP5rY*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
+[2026-04-25T11:58:48.335Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T11:58:50.406Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T11:58:50.705Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T11:58:52.413Z] Sending (btn=https://www.youtube.com/watch?v=Ab_dTneP5rY): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *https://www.youtube.com/watch?v=Ab_dTneP5rY*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
+[2026-04-25T11:58:54.515Z] Successfully sent to 6285766935413@s.whatsapp.net

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import api from '../../services/api';
-import { Users, Smartphone, Wallet, CheckCircle, Banknote } from 'lucide-react';
+import { Users, Smartphone, Wallet, CheckCircle } from 'lucide-react';
 
 const AdminDashboard = () => {
   const [stats, setStats] = useState(null);
@@ -46,17 +46,7 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      <div className="action-bar" style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-        <div className="title-group">
-          <h3 style={{ fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-            <Banknote size={20} color="#ff7675" />
-            Pending Withdrawals Amount
-          </h3>
-        </div>
-        <div style={{ fontSize: '1.5rem', fontWeight: 800, color: '#d63031' }}>
-          Rp {Number(stats.pendingWithdrawalsAmount).toLocaleString('id-ID')}
-        </div>
-      </div>
+
 
       <div style={{ display: 'grid', gap: '1.5rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', marginTop: '2rem' }}>
         

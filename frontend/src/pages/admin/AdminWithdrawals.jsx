@@ -60,7 +60,7 @@ const AdminWithdrawals = () => {
 
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
           <thead>
-            <tr style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', fontSize: '0.8rem', borderBottom: '1px solid #e2e8f0' }}>
+            <tr style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', fontSize: '0.8rem', borderBottom: '1px solid rgba(255,255,255,0.08)' }}>
               <th style={{ padding: '1rem 1.5rem' }}>DATE & USER</th>
               <th style={{ padding: '1rem 1.5rem' }}>AMOUNT (Rp)</th>
               <th style={{ padding: '1rem 1.5rem' }}>BANK DETAILS</th>
@@ -70,7 +70,7 @@ const AdminWithdrawals = () => {
           </thead>
           <tbody>
             {withdrawals.map((wd) => (
-              <tr key={wd.id} style={{ borderBottom: '1px solid #f1f5f9', background: wd.status === 'PENDING' ? '#fffbfa' : 'white' }}>
+              <tr key={wd.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', background: wd.status === 'PENDING' ? 'rgba(214,48,49,0.05)' : 'transparent' }}>
                 <td style={{ padding: '1rem 1.5rem' }}>
                   <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{wd.user.username}</div>
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>{new Date(wd.createdAt).toLocaleString('id-ID')}</div>
@@ -79,7 +79,7 @@ const AdminWithdrawals = () => {
                   {Number(wd.amount).toLocaleString('id-ID')}
                 </td>
                 <td style={{ padding: '1rem 1.5rem' }}>
-                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>{wd.bankDetails.bankName || '-'}</div>
+                  <div style={{ fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-main)' }}>{wd.bankDetails.bankName || '-'}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{wd.bankDetails.accountNumber || '-'}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{wd.bankDetails.accountHolder || '-'}</div>
                 </td>

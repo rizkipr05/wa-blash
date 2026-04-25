@@ -42,83 +42,85 @@ const Login = () => {
   const isFormValid = username.length > 0 && password.length > 0;
 
   return (
-    <div className="glass-card">
-      <div className="logo-wrapper">
-        <div className="logo-box">
-          <img src="/src/assets/logo.png" alt="WainAja Logo" style={{ width: '40px', height: '40px' }} />
-        </div>
-      </div>
-      <h1 className="title">Selamat Datang</h1>
-      <p className="subtitle">Masuk ke Platform WainAja</p>
-
-      <form onSubmit={handleLogin}>
-        <div className="form-group">
-          <label className="form-label">Username</label>
-          <div className="input-container">
-            <User className="input-icon" size={20} />
-            <input
-              type="text"
-              placeholder="pratama"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              required
-            />
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+      <div className="glass-card">
+        <div className="logo-wrapper">
+          <div className="logo-box">
+            <img src="/src/assets/logo.png" alt="WainAja Logo" style={{ width: '40px', height: '40px' }} />
           </div>
         </div>
+        <h1 className="title">Selamat Datang</h1>
+        <p className="subtitle">Masuk ke Platform WainAja</p>
 
-        <div className="form-group">
-          <label className="form-label">Password</label>
-          <div className="input-container">
-            <Lock className="input-icon" size={20} />
-            <input
-              type="password"
-              placeholder="••••••••"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+        <form onSubmit={handleLogin}>
+          <div className="form-group">
+            <label className="form-label">Username</label>
+            <div className="input-container">
+              <User className="input-icon" size={20} />
+              <input
+                type="text"
+                placeholder="pratama"
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label className="form-label">Password</label>
+            <div className="input-container">
+              <Lock className="input-icon" size={20} />
+              <input
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+          </div>
+
+          <div style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
+            <ReCAPTCHA
+              sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
+              onChange={(token) => setRecaptchaToken(token)}
             />
           </div>
+
+          <p style={{ fontSize: '11px', color: '#718096', marginBottom: '1.5rem', textAlign: 'center' }}>
+            Harap verifikasi bahwa Anda bukan robot
+          </p>
+
+          <button
+            type="submit"
+            className={`btn ${isFormValid && recaptchaToken ? 'btn-primary' : ''}`}
+            style={!(isFormValid && recaptchaToken) ? { background: '#cbd5e0', cursor: 'not-allowed', color: 'white' } : {}}
+            disabled={!isFormValid || !recaptchaToken}
+          >
+            Masuk Sekarang <ArrowRight size={18} />
+          </button>
+        </form>
+
+        <div className="divider">
+          <span>Belum punya akun?</span>
         </div>
 
-        <div style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
-          <ReCAPTCHA
-            sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
-            onChange={(token) => setRecaptchaToken(token)}
-          />
-        </div>
+        <Link to="/register" className="btn btn-secondary">
+          Daftar Sekarang
+        </Link>
 
-        <p style={{ fontSize: '11px', color: '#718096', marginBottom: '1.5rem', textAlign: 'center' }}>
-          Harap verifikasi bahwa Anda bukan robot
-        </p>
-
-        <button
-          type="submit"
-          className={`btn ${isFormValid && recaptchaToken ? 'btn-primary' : ''}`}
-          style={!(isFormValid && recaptchaToken) ? { background: '#cbd5e0', cursor: 'not-allowed', color: 'white' } : {}}
-          disabled={!isFormValid || !recaptchaToken}
-        >
-          Masuk Sekarang <ArrowRight size={18} />
-        </button>
-      </form>
-
-      <div className="divider">
-        <span>Belum punya akun?</span>
+        <PopupModal 
+          isOpen={modalCtx.isOpen} 
+          type={modalCtx.type} 
+          title={modalCtx.title} 
+          message={modalCtx.message} 
+          onClose={handleCloseModal} 
+        />
       </div>
-
-      <Link to="/register" className="btn btn-secondary">
-        Daftar Sekarang
-      </Link>
-
-      <div className="footer">
+      <div style={{ marginTop: '1.5rem', fontSize: '0.75rem', color: 'rgba(255,255,255,0.35)', textAlign: 'center' }}>
         © 2025 WainAja. Platform BY RIO CLOUD ID
       </div>
-      <PopupModal 
-        isOpen={modalCtx.isOpen} 
-        type={modalCtx.type} 
-        title={modalCtx.title} 
-        message={modalCtx.message} 
-        onClose={handleCloseModal} 
-      />
     </div>
   );
 };

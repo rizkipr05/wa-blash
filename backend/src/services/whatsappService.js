@@ -3,7 +3,7 @@ const path = require('path');
 const pino = require('pino');
 const QRCode = require('qrcode');
 const { PrismaClient } = require('@prisma/client');
-const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion } = require('@whiskeysockets/baileys');
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion, generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys');
 
 const prisma = new PrismaClient();
 
@@ -318,19 +318,18 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
               fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Error sending presence: ${e.message}\n`);
             }
 
-            // Build the final message text, always appending button link inline
-            // (templateButtons via Baileys is unreliable on modern WA — inline URL is universal)
+            // Build the final message, appending the link in a visual "button" style
             let finalMessage = message;
-            // Detect if buttonText accidentally contains a URL (user put URL in the text field)
             let resolvedButtonText = buttonText;
             let resolvedButtonUrl = buttonUrl;
+            // Auto-detect if user put URL in the buttonText field
             if (buttonText && buttonText.startsWith('http') && !buttonUrl) {
               resolvedButtonUrl = buttonText;
               resolvedButtonText = 'Buka Link';
             }
             if (resolvedButtonText && resolvedButtonUrl) {
-              finalMessage = `${message}\n\n🔗 *${resolvedButtonText}*\n${resolvedButtonUrl}`;
-            } else if (!resolvedButtonText && resolvedButtonUrl) {
+              finalMessage = `${message}\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *${resolvedButtonText}*\n${resolvedButtonUrl}\n〰️〰️〰️〰️〰️〰️〰️〰️`;
+            } else if (resolvedButtonUrl) {
               finalMessage = `${message}\n\n🔗 ${resolvedButtonUrl}`;
             }
 
@@ -342,15 +341,15 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
                 sendPayload.image = fs.readFileSync(absolutePath);
                 sendPayload.caption = finalMessage;
               } else {
-                LOGGER.warn({ deviceId, absolutePath }, 'Blast image file missing from server, failing over to text-only');
+                LOGGER.warn({ deviceId, absolutePath }, 'Blast image file missing, falling over to text-only');
                 sendPayload.text = finalMessage;
               }
             } else {
               sendPayload.text = finalMessage;
             }
-
-            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending payload (buttonText=${buttonText||'none'}, buttonUrl=${buttonUrl||'none'}): ${JSON.stringify(sendPayload, (key, value) => key === 'image' ? '<Buffer>' : value, 2)}\n`);
+            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending (btn=${resolvedButtonText||'none'}): ${JSON.stringify(sendPayload, (k,v) => k === 'image' ? '<Buffer>' : v)}\n`);
             await runtime.sock.sendMessage(exists[0].jid, sendPayload);
+
             fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Successfully sent to ${exists[0].jid}\n`);
             LOGGER.info({ deviceId, target: targets[i] }, 'Blast message sent successfully');
             deliverySuccess = true;
