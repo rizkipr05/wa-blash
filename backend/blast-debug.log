@@ -124,3 +124,19 @@
 [2026-04-25T12:43:08.085Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
 [2026-04-25T12:43:09.794Z] Sending (btn=Buka Link): {"image":"<Buffer>","caption":"Halo, ini pesan dari sistem buat test\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *Buka Link*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY\n〰️〰️〰️〰️〰️〰️〰️〰️"}
 [2026-04-25T12:43:11.206Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T13:56:45.354Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T13:56:45.573Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T13:56:47.286Z] Sending URL button (btn=Buka Link): https://www.youtube.com/watch?v=Ab_dTneP5rY
+[2026-04-25T13:56:47.312Z] Error sending blast: Invalid media type
+[2026-04-25T13:56:49.411Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T13:56:49.722Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T13:56:51.503Z] Sending URL button (btn=Buka Link): https://www.youtube.com/watch?v=Ab_dTneP5rY
+[2026-04-25T13:56:51.507Z] Error sending blast: Invalid media type
+[2026-04-25T14:01:08.282Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T14:01:08.471Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T14:01:10.180Z] Sending URL button (btn=Buka Link): https://www.youtube.com/watch?v=Ab_dTneP5rY
+[2026-04-25T14:01:10.188Z] Error sending blast: Invalid media type
+[2026-04-25T14:01:12.414Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T14:01:12.594Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T14:01:14.305Z] Sending URL button (btn=Buka Link): https://www.youtube.com/watch?v=Ab_dTneP5rY
+[2026-04-25T14:01:14.306Z] Error sending blast: Invalid media type

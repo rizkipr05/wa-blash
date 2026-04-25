@@ -261,6 +261,29 @@ const bootstrapConnectedDevices = async () => {
   }
 };
 
+const buildUrlButtonPayload = (teksPesan, teksTombol, urlTujuan) => ({
+  viewOnceMessage: {
+    message: {
+      interactiveMessage: {
+        header: { title: '' },
+        body: { text: teksPesan },
+        nativeFlowMessage: {
+          buttons: [
+            {
+              name: 'cta_url',
+              buttonParamsJson: JSON.stringify({
+                display_text: teksTombol,
+                url: urlTujuan,
+                merchant_url: urlTujuan
+              })
+            }
+          ]
+        }
+      }
+    }
+  }
+});
+
 const blastMessages = async (deviceId, targets, message, speed, imageUrl = null, firewall, buttonText = null, buttonUrl = null) => {
   const runtime = getSessionState(deviceId);
   if (!runtime || !runtime.sock) {
@@ -333,10 +356,15 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
               finalMessage = `${message}\n\n🔗 ${resolvedButtonUrl}`;
             }
 
-            const sendPayload = {};
-            if (imageUrl) {
+            if (resolvedButtonText && resolvedButtonUrl) {
+              // Kirim sebagai interactive URL button (native CTA)
+              const buttonPayload = buildUrlButtonPayload(message, resolvedButtonText, resolvedButtonUrl);
+              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending URL button (btn=${resolvedButtonText}): ${resolvedButtonUrl}\n`);
+              await runtime.sock.sendMessage(exists[0].jid, buttonPayload);
+            } else if (imageUrl) {
               const cleanedImageUrl = imageUrl.replace(/^\/+/, '');
               const absolutePath = path.join(__dirname, '../../', cleanedImageUrl);
+              const sendPayload = {};
               if (fs.existsSync(absolutePath)) {
                 sendPayload.image = fs.readFileSync(absolutePath);
                 sendPayload.caption = finalMessage;
@@ -344,11 +372,13 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
                 LOGGER.warn({ deviceId, absolutePath }, 'Blast image file missing, falling over to text-only');
                 sendPayload.text = finalMessage;
               }
+              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending image: ${JSON.stringify(sendPayload, (k,v) => k === 'image' ? '<Buffer>' : v)}\n`);
+              await runtime.sock.sendMessage(exists[0].jid, sendPayload);
             } else {
-              sendPayload.text = finalMessage;
+              const sendPayload = { text: finalMessage };
+              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending text: ${finalMessage.substring(0, 80)}\n`);
+              await runtime.sock.sendMessage(exists[0].jid, sendPayload);
             }
-            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending (btn=${resolvedButtonText||'none'}): ${JSON.stringify(sendPayload, (k,v) => k === 'image' ? '<Buffer>' : v)}\n`);
-            await runtime.sock.sendMessage(exists[0].jid, sendPayload);
 
             fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Successfully sent to ${exists[0].jid}\n`);
             LOGGER.info({ deviceId, target: targets[i] }, 'Blast message sent successfully');
