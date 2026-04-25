@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import PopupModal from '../components/PopupModal';
 import {
   LogOut,
   Users,
@@ -18,6 +19,7 @@ const Referral = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [referrals, setReferrals] = useState([]);
+  const [modalCtx, setModalCtx] = useState({ isOpen: false, type: '', title: '', message: '' });
 
   useEffect(() => {
     const fetchData = async () => {
@@ -44,7 +46,7 @@ const Referral = () => {
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);
-    alert('Referral link copied!');
+    setModalCtx({ isOpen: true, type: 'success', title: 'Berhasil', message: 'Tautan referral disalin!' });
   };
 
   const navItems = [
@@ -70,7 +72,7 @@ const Referral = () => {
             </div>
             <div>
               <h1 className="header-title">WainAja</h1>
-              <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>Program Referral</p>
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Program Referral</p>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
@@ -132,7 +134,7 @@ const Referral = () => {
                 <div key={idx} className="info-row" style={{ padding: '1rem' }}>
                   <div>
                     <div style={{ fontWeight: 700 }}>{ref.username}</div>
-                    <div style={{ fontSize: '0.75rem', color: '#636e72' }}>Joined: {new Date(ref.createdAt).toLocaleDateString()}</div>
+                    <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Joined: {new Date(ref.createdAt).toLocaleDateString()}</div>
                   </div>
                   <div className="badge-status badge-rank">{ref.rank}</div>
                 </div>
@@ -152,6 +154,14 @@ const Referral = () => {
           ))}
         </nav>
       </main>
+      
+      <PopupModal 
+        isOpen={modalCtx.isOpen} 
+        type={modalCtx.type} 
+        title={modalCtx.title} 
+        message={modalCtx.message} 
+        onClose={() => setModalCtx({ ...modalCtx, isOpen: false })} 
+      />
     </div>
   );
 };

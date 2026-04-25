@@ -1,0 +1,86 @@
+[2026-04-24T06:49:03.157Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-24T06:49:03.439Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-24T06:49:03.439Z] Sending text: Halo, ini pesan dari sistem.
+[2026-04-24T06:49:04.619Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-24T07:42:57.657Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-24T07:42:58.122Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-24T07:42:58.122Z] Sending text: Halo, ini pesan dari sistem.
+[2026-04-24T07:42:59.712Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-24T07:54:00.620Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-24T07:54:00.894Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-24T07:54:02.599Z] Sending text: Halo, ini pesan dari sistem.
+[2026-04-24T07:54:04.194Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-24T07:55:33.210Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-24T07:55:33.478Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-24T07:55:35.183Z] Sending text: Halo, ini pesan dari sistem.
+[2026-04-24T07:55:36.769Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-24T10:17:56.160Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-24T10:17:56.402Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-24T10:17:58.111Z] Sending text: Halo, ini pesan dari sistem.
+[2026-04-24T10:17:59.240Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-24T11:49:05.661Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-24T11:49:05.966Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-24T11:49:07.751Z] Sending text: Halo, ini pesan dari sistem.
+[2026-04-24T11:49:11.599Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-24T11:53:49.738Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-24T11:53:50.076Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-24T11:53:51.790Z] Sending image: /opt/lampp/htdocs/wa-blash/backend/uploads/1777031513207-309008471.png
+[2026-04-24T11:53:55.051Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-24T11:53:57.529Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-24T11:53:57.853Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-24T11:53:59.565Z] Sending image: /opt/lampp/htdocs/wa-blash/backend/uploads/1777031513207-309008471.png
+[2026-04-24T11:54:02.811Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T07:14:59.416Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T07:14:59.851Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T07:15:06.713Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T07:15:09.590Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T07:15:10.405Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T07:15:13.908Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T09:36:17.795Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T09:36:18.136Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T09:36:22.010Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T09:36:24.539Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T09:36:24.794Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T09:36:28.261Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T09:45:45.220Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T09:45:45.618Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T09:45:47.331Z] Sending payload: {
+  "image": "<Buffer>",
+  "caption": "Halo, ini pesan dari sistem buat test"
+}
+[2026-04-25T09:45:51.150Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T09:45:53.727Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T09:45:54.124Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T09:45:55.852Z] Sending payload: {
+  "image": "<Buffer>",
+  "caption": "Halo, ini pesan dari sistem buat test"
+}
+[2026-04-25T09:45:58.054Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T09:58:54.609Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T09:58:54.951Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T09:58:56.664Z] Sending payload (buttonText=https://www.youtube.com/watch?v=Ab_dTneP5rY, buttonUrl=none): {
+  "image": "<Buffer>",
+  "caption": "Halo, ini pesan dari sistem buat test"
+}
+[2026-04-25T09:59:00.235Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T09:59:02.720Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T09:59:03.058Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T09:59:04.769Z] Sending payload (buttonText=https://www.youtube.com/watch?v=Ab_dTneP5rY, buttonUrl=none): {
+  "image": "<Buffer>",
+  "caption": "Halo, ini pesan dari sistem buat test"
+}
+[2026-04-25T09:59:07.307Z] Successfully sent to 6285766935413@s.whatsapp.net
+[2026-04-25T10:03:59.638Z] Target: 6288276477014, format: 6288276477014@s.whatsapp.net
+[2026-04-25T10:03:59.956Z] Exists result: [{"jid":"6288276477014@s.whatsapp.net","exists":true}]
+[2026-04-25T10:04:01.669Z] Sending payload (buttonText=https://www.youtube.com/watch?v=Ab_dTneP5rY, buttonUrl=https://www.youtube.com/watch?v=Ab_dTneP5rY): {
+  "image": "<Buffer>",
+  "caption": "Halo, ini pesan dari sistem buat test\n\n🔗 *https://www.youtube.com/watch?v=Ab_dTneP5rY*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY"
+}
+[2026-04-25T10:04:03.442Z] Successfully sent to 6288276477014@s.whatsapp.net
+[2026-04-25T10:04:05.868Z] Target: 6285766935413, format: 6285766935413@s.whatsapp.net
+[2026-04-25T10:04:06.158Z] Exists result: [{"jid":"6285766935413@s.whatsapp.net","exists":true}]
+[2026-04-25T10:04:07.874Z] Sending payload (buttonText=https://www.youtube.com/watch?v=Ab_dTneP5rY, buttonUrl=https://www.youtube.com/watch?v=Ab_dTneP5rY): {
+  "image": "<Buffer>",
+  "caption": "Halo, ini pesan dari sistem buat test\n\n🔗 *https://www.youtube.com/watch?v=Ab_dTneP5rY*\nhttps://www.youtube.com/watch?v=Ab_dTneP5rY"
+}
+[2026-04-25T10:04:09.587Z] Successfully sent to 6285766935413@s.whatsapp.net

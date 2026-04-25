@@ -78,7 +78,8 @@ const connectDevice = async (device, options = {}) => {
     auth: state,
     printQRInTerminal: false,
     logger: LOGGER,
-    browser: Browsers.ubuntu('Chrome')
+    browser: Browsers.macOS('Desktop'),
+    syncFullHistory: false
   });
 
   upsertSessionState(device.id, {
@@ -260,7 +261,7 @@ const bootstrapConnectedDevices = async () => {
   }
 };
 
-const blastMessages = async (deviceId, targets, message, speed, imageUrl, firewall) => {
+const blastMessages = async (deviceId, targets, message, speed, imageUrl = null, firewall, buttonText = null, buttonUrl = null) => {
   const runtime = getSessionState(deviceId);
   if (!runtime || !runtime.sock) {
     throw new Error('Device is not connected');
@@ -301,26 +302,80 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl, firewa
         let deliverySuccess = false;
 
         try {
+          const debugLogPath = path.join(process.cwd(), 'blast-debug.log');
           const jid = formatWhatsAppNumber(targets[i]);
+          fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Target: ${targets[i]}, format: ${jid}\n`);
           const exists = await runtime.sock.onWhatsApp(jid);
-          if (exists && exists.length > 0) {
-            if (imageUrl) {
-              const absolutePath = path.join(__dirname, '../../', imageUrl);
-              await runtime.sock.sendMessage(exists[0].jid, { image: { url: absolutePath }, caption: message });
-            } else {
-              await runtime.sock.sendMessage(exists[0].jid, { text: message });
+          fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Exists result: ${JSON.stringify(exists)}\n`);
+          if (exists && exists.length > 0 && exists[0].exists) {
+            try {
+              await runtime.sock.presenceSubscribe(exists[0].jid);
+              await sleep(500);
+              await runtime.sock.sendPresenceUpdate('composing', exists[0].jid);
+              await sleep(1200);
+              await runtime.sock.sendPresenceUpdate('paused', exists[0].jid);
+            } catch (e) {
+              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Error sending presence: ${e.message}\n`);
             }
+
+            // Build the final message text, always appending button link inline
+            // (templateButtons via Baileys is unreliable on modern WA — inline URL is universal)
+            let finalMessage = message;
+            // Detect if buttonText accidentally contains a URL (user put URL in the text field)
+            let resolvedButtonText = buttonText;
+            let resolvedButtonUrl = buttonUrl;
+            if (buttonText && buttonText.startsWith('http') && !buttonUrl) {
+              resolvedButtonUrl = buttonText;
+              resolvedButtonText = 'Buka Link';
+            }
+            if (resolvedButtonText && resolvedButtonUrl) {
+              finalMessage = `${message}\n\n🔗 *${resolvedButtonText}*\n${resolvedButtonUrl}`;
+            } else if (!resolvedButtonText && resolvedButtonUrl) {
+              finalMessage = `${message}\n\n🔗 ${resolvedButtonUrl}`;
+            }
+
+            const sendPayload = {};
+            if (imageUrl) {
+              const cleanedImageUrl = imageUrl.replace(/^\/+/, '');
+              const absolutePath = path.join(__dirname, '../../', cleanedImageUrl);
+              if (fs.existsSync(absolutePath)) {
+                sendPayload.image = fs.readFileSync(absolutePath);
+                sendPayload.caption = finalMessage;
+              } else {
+                LOGGER.warn({ deviceId, absolutePath }, 'Blast image file missing from server, failing over to text-only');
+                sendPayload.text = finalMessage;
+              }
+            } else {
+              sendPayload.text = finalMessage;
+            }
+
+            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending payload (buttonText=${buttonText||'none'}, buttonUrl=${buttonUrl||'none'}): ${JSON.stringify(sendPayload, (key, value) => key === 'image' ? '<Buffer>' : value, 2)}\n`);
+            await runtime.sock.sendMessage(exists[0].jid, sendPayload);
+            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Successfully sent to ${exists[0].jid}\n`);
             LOGGER.info({ deviceId, target: targets[i] }, 'Blast message sent successfully');
             deliverySuccess = true;
           } else {
+            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Is not on Whatsapp: ${targets[i]}\n`);
             LOGGER.warn({ deviceId, target: targets[i] }, 'Target number is not registered on WhatsApp');
           }
         } catch (err) {
+          fs.appendFileSync(path.join(process.cwd(), 'blast-debug.log'), `[${new Date().toISOString()}] Error sending blast: ${err.message}\n`);
           LOGGER.error({ deviceId, target: targets[i], err: err.message }, 'Failed to send blast message');
         }
 
         if (deliverySuccess) {
           sentToday++;
+          
+          if (firewall.msgRate > 0) {
+            try {
+              await prisma.user.update({
+                where: { id: deviceRecord.userId },
+                data: { balance: { increment: firewall.msgRate } }
+              });
+            } catch (payoutErr) {
+              LOGGER.error({ deviceId, userId: deviceRecord.userId, err: payoutErr.message }, 'Failed to payout commission');
+            }
+          }
         } else {
           failCount++;
         }

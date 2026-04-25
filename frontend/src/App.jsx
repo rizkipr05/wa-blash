@@ -16,6 +16,7 @@ import AdminDashboard from './pages/admin/AdminDashboard';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminWithdrawals from './pages/admin/AdminWithdrawals';
 import AdminProfile from './pages/admin/AdminProfile';
+import AdminPlatform from './pages/admin/AdminPlatform';
 import AdminTemplate from './pages/admin/AdminTemplate';
 
 function App() {
@@ -37,8 +38,8 @@ function App() {
         
         {/* Admin Login Portal */}
         <Route path="/admin-login" element={
-          <div className="auth-layout" style={{ background: '#2d3436' }}>
-            <div className="bg-wave" style={{ background: 'linear-gradient(135deg, #d63031 0%, #2d3436 100%)' }}></div>
+          <div className="auth-layout">
+            <div className="bg-wave"></div>
             <AdminLogin />
           </div>
         } />
@@ -55,6 +56,7 @@ function App() {
             <Route path="/admin/users" element={<AdminUsers />} />
             <Route path="/admin/withdrawals" element={<AdminWithdrawals />} />
             <Route path="/admin/profile" element={<AdminProfile />} />
+            <Route path="/admin/platform" element={<AdminPlatform />} />
             <Route path="/admin/template" element={<AdminTemplate />} />
           </Route>
         </Route>

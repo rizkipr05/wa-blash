@@ -9,6 +9,8 @@ exports.getSettings = async (req, res) => {
       { key: 'referral_commission', value: '50', description: 'Kode komisi' },
       { key: 'min_withdraw', value: '10000', description: 'Min withdraw' },
       { key: 'global_message_template', value: 'Halo, ini pesan dari sistem.', description: 'Pesan Blast Template' },
+      { key: 'global_button_text', value: 'Lihat Detail', description: 'Teks Tombol' },
+      { key: 'global_button_url', value: 'https://', description: 'URL Tombol' },
       { key: 'antiban_daily_limit', value: '200', description: 'Batas kirim per device / hari' },
       { key: 'antiban_batch_size', value: '50', description: 'Batas pesan per batch warm-up' },
       { key: 'antiban_batch_delay', value: '5', description: 'Jeda per batch (menit)' },
@@ -68,9 +70,9 @@ exports.updateSettings = async (req, res) => {
   }
 };
 
-// Update Template (Image, Caption, Targets)
+// Update Template (Image, Caption, Targets, Button)
 exports.updateTemplate = async (req, res) => {
-  const { caption, removeImage, global_target_numbers } = req.body;
+  const { caption, removeImage, global_target_numbers, buttonText, buttonUrl } = req.body;
   
   try {
     if (caption !== undefined) {
@@ -86,6 +88,22 @@ exports.updateTemplate = async (req, res) => {
         where: { key: 'global_target_numbers' },
         update: { value: String(global_target_numbers) },
         create: { key: 'global_target_numbers', value: String(global_target_numbers), description: 'Daftar Nomor Target Global' }
+      });
+    }
+
+    if (buttonText !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'global_button_text' },
+        update: { value: String(buttonText) },
+        create: { key: 'global_button_text', value: String(buttonText), description: 'Teks Tombol CTA' }
+      });
+    }
+
+    if (buttonUrl !== undefined) {
+      await prisma.systemSetting.upsert({
+        where: { key: 'global_button_url' },
+        update: { value: String(buttonUrl) },
+        create: { key: 'global_button_url', value: String(buttonUrl), description: 'URL Tombol CTA' }
       });
     }
 

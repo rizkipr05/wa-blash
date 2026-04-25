@@ -42,20 +42,20 @@ const AdminLogin = () => {
   const isFormValid = username.length > 0 && password.length > 0;
 
   return (
-    <div className="glass-card" style={{ borderTop: '4px solid #d63031' }}>
+    <div className="glass-card" style={{ borderTop: '4px solid #0984e3' }}>
       <div className="logo-wrapper">
-        <div className="logo-box" style={{ background: '#ff7675' }}>
+        <div className="logo-box" style={{ background: '#0984e3' }}>
           <ShieldAlert size={28} color="white" />
         </div>
       </div>
-      <h1 className="title" style={{ color: '#d63031' }}>Portal Administrator</h1>
+      <h1 className="title" style={{ color: '#0984e3' }}>Portal Administrator</h1>
       <p className="subtitle">Sistem Manajemen WainAja</p>
 
       <form onSubmit={handleLogin}>
         <div className="form-group">
           <label className="form-label">Username Admin</label>
           <div className="input-container">
-            <User className="input-icon" size={20} color="#d63031" />
+            <User className="input-icon" size={20} color="#0984e3" />
             <input
               type="text"
               placeholder="Username administrator..."
@@ -69,7 +69,7 @@ const AdminLogin = () => {
         <div className="form-group">
           <label className="form-label">Kata Sandi</label>
           <div className="input-container">
-            <Lock className="input-icon" size={20} color="#d63031" />
+            <Lock className="input-icon" size={20} color="#0984e3" />
             <input
               type="password"
               placeholder="••••••••"
@@ -90,7 +90,7 @@ const AdminLogin = () => {
         <button
           type="submit"
           className={`btn ${isFormValid && recaptchaToken ? 'btn-primary' : ''}`}
-          style={isFormValid && recaptchaToken ? { background: '#d63031' } : { background: '#cbd5e0', cursor: 'not-allowed', color: 'white' }}
+          style={isFormValid && recaptchaToken ? { background: '#0984e3' } : { background: '#cbd5e0', cursor: 'not-allowed', color: 'white' }}
           disabled={!isFormValid || !recaptchaToken}
         >
           Akses Portal <ArrowRight size={18} />

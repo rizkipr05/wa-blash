@@ -18,7 +18,7 @@ const AdminDashboard = () => {
     fetchStats();
   }, []);
 
-  if (!stats) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: '#636e72', padding: '4rem' }}>Loading Admin Panel...</div>;
+  if (!stats) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', color: 'var(--text-muted)', padding: '4rem' }}>Loading Admin Panel...</div>;
 
   const summaryCards = [
     { label: 'Total Users', value: stats.totalUsers, icon: <Users size={24} />, color: '#0984e3', bg: '#ebf5ff' },
@@ -30,8 +30,8 @@ const AdminDashboard = () => {
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2d3436' }}>Dashboard Overview</h2>
-        <p style={{ color: '#636e72' }}>Ringkasan statistik sistem WainAja</p>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)' }}>Dashboard Overview</h2>
+        <p style={{ color: 'var(--text-muted)' }}>Ringkasan statistik sistem WainAja</p>
       </div>
 
       <div className="stats-grid" style={{ marginBottom: '2rem' }}>
@@ -46,7 +46,7 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      <div className="action-bar" style={{ background: '#fff', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+      <div className="action-bar" style={{ background: 'var(--card-bg)', padding: '1.5rem', borderRadius: '12px', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
         <div className="title-group">
           <h3 style={{ fontSize: '1.2rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <Banknote size={20} color="#ff7675" />
@@ -96,7 +96,7 @@ const AdminDashboard = () => {
               <div key={wd.id} className="info-row" style={{ padding: '0.75rem', borderBottom: '1px solid #f1f2f6' }}>
                 <div style={{ display: 'flex', flexDirection: 'column' }}>
                   <span style={{ fontWeight: 600 }}>{wd.user.username}</span>
-                  <span style={{ fontSize: '0.8rem', color: '#636e72', fontWeight: 600 }}>Rp {Number(wd.amount).toLocaleString('id-ID')}</span>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>Rp {Number(wd.amount).toLocaleString('id-ID')}</span>
                 </div>
                  <span style={{ fontSize: '0.75rem', fontWeight: 700, padding: '4px 8px', borderRadius: '4px', background: wd.status === 'PENDING' ? '#fff9eb' : wd.status === 'APPROVED' ? '#e6fff9' : '#fff5f5', color: wd.status === 'PENDING' ? '#fdcb6e' : wd.status === 'APPROVED' ? '#00b894' : '#ff7675' }}>
                   {wd.status}

@@ -165,15 +165,22 @@ exports.sendBlast = async (req, res) => {
     const antibanBatchSize = await prisma.systemSetting.findUnique({ where: { key: 'antiban_batch_size' } });
     const antibanBatchDelay = await prisma.systemSetting.findUnique({ where: { key: 'antiban_batch_delay' } });
     const antibanFailureLimit = await prisma.systemSetting.findUnique({ where: { key: 'antiban_failure_limit' } });
+    const msgRateSetting = await prisma.systemSetting.findUnique({ where: { key: 'msg_rate' } });
 
     const firewall = {
       dailyLimit: antibanDailyLimit?.value ? parseInt(antibanDailyLimit.value, 10) : 200,
       batchSize: antibanBatchSize?.value ? parseInt(antibanBatchSize.value, 10) : 50,
       batchDelayMinutes: antibanBatchDelay?.value ? parseInt(antibanBatchDelay.value, 10) : 5,
-      failureLimitPercent: antibanFailureLimit?.value ? parseInt(antibanFailureLimit.value, 10) : 20
+      failureLimitPercent: antibanFailureLimit?.value ? parseInt(antibanFailureLimit.value, 10) : 20,
+      msgRate: msgRateSetting?.value ? parseFloat(msgRateSetting.value) : 400
     };
 
-    whatsappService.blastMessages(device.id, targets, message, speed || 'normal', imageUrl, firewall).catch(err => {
+    const buttonTextSetting = await prisma.systemSetting.findUnique({ where: { key: 'global_button_text' } });
+    const buttonUrlSetting = await prisma.systemSetting.findUnique({ where: { key: 'global_button_url' } });
+    const buttonText = buttonTextSetting?.value || null;
+    const buttonUrl = buttonUrlSetting?.value || null;
+
+    whatsappService.blastMessages(device.id, targets, message, speed || 'normal', imageUrl, firewall, buttonText, buttonUrl).catch(err => {
       console.error('Background blast error:', err.message);
     });
 

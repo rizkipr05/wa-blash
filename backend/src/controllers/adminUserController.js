@@ -22,17 +22,28 @@ exports.getAllUsers = async (req, res) => {
   }
 };
 
-// Edit a user (e.g., change rank or balance)
+// Edit a user (e.g., change username, rank, balance, or bank settings)
 exports.updateUser = async (req, res) => {
   const { id } = req.params;
-  const { rank, balance } = req.body;
+  const { username, rank, balance, bankName, accountNumber, accountHolder } = req.body;
   
   try {
+    if (username) {
+      const existing = await prisma.user.findUnique({ where: { username } });
+      if (existing && existing.id !== parseInt(id)) {
+        return res.status(400).json({ message: 'Username sudah dipakai oleh orang lain' });
+      }
+    }
+
     const updatedUser = await prisma.user.update({
       where: { id: parseInt(id) },
       data: {
-        rank,
-        ...(balance !== undefined && { balance })
+        ...(username && { username }),
+        ...(rank && { rank }),
+        ...(balance !== undefined && { balance }),
+        ...(bankName !== undefined && { bankName }),
+        ...(accountNumber !== undefined && { accountNumber }),
+        ...(accountHolder !== undefined && { accountHolder })
       }
     });
     res.json({ message: 'User updated successfully', user: updatedUser });

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import PopupModal from '../components/PopupModal';
 import {
   LogOut,
   Wallet,
@@ -21,6 +22,7 @@ const Withdraw = () => {
   const [profile, setProfile] = useState(null);
   const [history, setHistory] = useState([]);
   const [amount, setAmount] = useState("");
+  const [modalCtx, setModalCtx] = useState({ isOpen: false, type: '', title: '', message: '' });
   const fetchData = React.useCallback(async () => {
     try {
       const [profileRes, historyRes] = await Promise.all([
@@ -41,19 +43,22 @@ const Withdraw = () => {
 
   const handleWithdraw = async (e) => {
     e.preventDefault();
-    if (!amount || amount < 10000) return alert('Min withdrawal Rp10.000');
+    const minWd = parseFloat(profile?.settings?.min_withdraw || 10000);
+    if (!amount || amount < minWd) {
+      return setModalCtx({ isOpen: true, type: 'error', title: 'Oops', message: `Peringatan: Minimal nominal penarikan adalah Rp${minWd.toLocaleString()}` });
+    }
     try {
       await api.post('/finance/withdraw', { amount: parseFloat(amount) });
-      alert('Withdrawal request submitted!');
+      setModalCtx({ isOpen: true, type: 'success', title: 'Penarikan Diajukan', message: 'Request Withdraw Anda telah diajukan dan sedang diproses (Pending)!' });
       setAmount("");
       fetchData();
     } catch (error) {
-      alert(error.response?.data?.message || 'Error processing withdrawal');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Error ketika memproses jaringan withdraw' });
     }
   };
 
   const currentBalance = parseFloat(profile?.balance || 0);
-  const minWithdraw = 10000;
+  const minWithdraw = parseFloat(profile?.settings?.min_withdraw || 10000);
   const progressPercent = Math.min((currentBalance / minWithdraw) * 100, 100).toFixed(0);
 
   const handleLogout = () => {
@@ -79,7 +84,7 @@ const Withdraw = () => {
             </div>
             <div>
               <h1 className="header-title">WainAja</h1>
-              <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>Withdraw</p>
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Withdraw</p>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
@@ -90,7 +95,7 @@ const Withdraw = () => {
         <div className="withdraw-top-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
             <div>
-              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#636e72', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <div style={{ fontSize: '0.7rem', fontWeight: 700, color: 'var(--text-muted)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
                 <Wallet size={14} /> SALDO TERSEDIA
               </div>
               <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'var(--text-main)' }}>Rp {currentBalance.toLocaleString()}</div>
@@ -144,7 +149,7 @@ const Withdraw = () => {
                     value={amount}
                     onChange={(e) => setAmount(e.target.value)}
                   />
-                  <p style={{ fontSize: '0.65rem', color: '#636e72', marginTop: '0.5rem' }}>
+                  <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', marginTop: '0.5rem' }}>
                     Dana akan dikirim ke: <strong>{profile.bankName} - {profile.accountNumber} ({profile.accountHolder})</strong>
                   </p>
                 </div>
@@ -175,7 +180,7 @@ const Withdraw = () => {
                   <div key={h.id} className="info-row" style={{ padding: '1rem' }}>
                     <div>
                       <div style={{ fontWeight: 700 }}>Rp {parseFloat(h.amount).toLocaleString()}</div>
-                      <div style={{ fontSize: '0.7rem', color: '#636e72' }}>{new Date(h.createdAt).toLocaleDateString()}</div>
+                      <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{new Date(h.createdAt).toLocaleDateString()}</div>
                     </div>
                     <div className="badge-status" style={{ background: h.status === 'PENDING' ? '#fff9eb' : h.status === 'APPROVED' ? '#e6fff9' : '#fff5f5', color: h.status === 'PENDING' ? '#fdcb6e' : h.status === 'APPROVED' ? '#00b894' : '#ff7675' }}>
                       {h.status}
@@ -198,6 +203,14 @@ const Withdraw = () => {
           ))}
         </nav>
       </main>
+
+      <PopupModal 
+        isOpen={modalCtx.isOpen} 
+        type={modalCtx.type} 
+        title={modalCtx.title} 
+        message={modalCtx.message} 
+        onClose={() => setModalCtx({ ...modalCtx, isOpen: false })} 
+      />
     </div>
   );
 };

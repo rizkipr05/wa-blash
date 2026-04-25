@@ -77,7 +77,7 @@ const Dashboard = () => {
             </div>
             <div>
               <h1 className="header-title">WainAja</h1>
-              <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>Dashboard</p>
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Dashboard</p>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>

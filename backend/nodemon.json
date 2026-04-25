@@ -1,0 +1,8 @@
+{
+  "ignore": [
+    "wa-sessions/*",
+    "wa-sessions/**/*",
+    "uploads/*",
+    "node_modules/*"
+  ]
+}

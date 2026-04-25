@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../services/api';
 import { Banknote, Check, X } from 'lucide-react';
+import PopupModal from '../../components/PopupModal';
 
 const AdminWithdrawals = () => {
   const [withdrawals, setWithdrawals] = useState([]);
+  const [modalCtx, setModalCtx] = useState({ isOpen: false, type: '', title: '', message: '', onConfirm: null, showCancel: false });
 
   const fetchWithdrawals = React.useCallback(async () => {
     try {
@@ -19,23 +21,30 @@ const AdminWithdrawals = () => {
     fetchWithdrawals();
   }, [fetchWithdrawals]);
 
-  const handleProcess = async (id, status) => {
-    if (window.confirm(`Are you sure you want to ${status} this withdrawal?`)) {
-      try {
-        await api.put(`/admin/withdrawals/${id}/process`, { status });
-        alert(`Withdrawal strictly marked as ${status}`);
-        fetchWithdrawals();
-      } catch {
-        alert('Error processing withdrawal');
+  const handleUpdateStatus = async (id, status) => {
+    setModalCtx({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Konfirmasi Withdrawal',
+      message: `Apakah Anda yakin ingin memproses status transaksi ini menjadi ${status}?`,
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          await api.put(`/admin/withdrawals/${id}/process`, { status });
+          setModalCtx({ isOpen: true, type: 'success', title: 'Berhasil', message: `Withdrawal berhasil ditandai sebagai ${status}` });
+          fetchWithdrawals();
+        } catch (err) {
+          setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: err.response?.data?.message || 'Error ketika memproses withdrawal' });
+        }
       }
-    }
+    });
   };
 
   return (
     <div>
       <div style={{ marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: '#2d3436' }}>Withdrawal Requests</h2>
-        <p style={{ color: '#636e72' }}>Kelola permintaan pencairan dana</p>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--text-main)' }}>Withdrawal Requests</h2>
+        <p style={{ color: 'var(--text-muted)' }}>Kelola permintaan pencairan dana</p>
       </div>
 
       <div className="device-list-container" style={{ overflowX: 'auto' }}>
@@ -51,7 +60,7 @@ const AdminWithdrawals = () => {
 
         <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', minWidth: '800px' }}>
           <thead>
-            <tr style={{ background: '#f8fafc', color: '#64748b', fontSize: '0.8rem', borderBottom: '1px solid #e2e8f0' }}>
+            <tr style={{ background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text-muted)', fontSize: '0.8rem', borderBottom: '1px solid #e2e8f0' }}>
               <th style={{ padding: '1rem 1.5rem' }}>DATE & USER</th>
               <th style={{ padding: '1rem 1.5rem' }}>AMOUNT (Rp)</th>
               <th style={{ padding: '1rem 1.5rem' }}>BANK DETAILS</th>
@@ -63,7 +72,7 @@ const AdminWithdrawals = () => {
             {withdrawals.map((wd) => (
               <tr key={wd.id} style={{ borderBottom: '1px solid #f1f5f9', background: wd.status === 'PENDING' ? '#fffbfa' : 'white' }}>
                 <td style={{ padding: '1rem 1.5rem' }}>
-                  <div style={{ fontWeight: 700, color: '#1e293b' }}>{wd.user.username}</div>
+                  <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{wd.user.username}</div>
                   <div style={{ fontSize: '0.75rem', color: '#94a3b8', marginTop: '4px' }}>{new Date(wd.createdAt).toLocaleString('id-ID')}</div>
                 </td>
                 <td style={{ padding: '1rem 1.5rem', fontWeight: 800, color: '#d63031' }}>
@@ -71,8 +80,8 @@ const AdminWithdrawals = () => {
                 </td>
                 <td style={{ padding: '1rem 1.5rem' }}>
                   <div style={{ fontSize: '0.85rem', fontWeight: 600, color: '#334155' }}>{wd.bankDetails.bankName || '-'}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{wd.bankDetails.accountNumber || '-'}</div>
-                  <div style={{ fontSize: '0.75rem', color: '#64748b' }}>{wd.bankDetails.accountHolder || '-'}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{wd.bankDetails.accountNumber || '-'}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{wd.bankDetails.accountHolder || '-'}</div>
                 </td>
                 <td style={{ padding: '1rem 1.5rem' }}>
                   <span style={{
@@ -87,7 +96,7 @@ const AdminWithdrawals = () => {
                   {wd.status === 'PENDING' ? (
                     <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
                       <button
-                        onClick={() => handleProcess(wd.id, 'APPROVED')}
+                        onClick={() => handleUpdateStatus(wd.id, 'APPROVED')}
                         style={{ border: 'none', background: '#10b981', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '0.75rem', transition: 'all 0.2s' }}
                         onMouseOver={(e) => e.currentTarget.style.background = '#059669'}
                         onMouseOut={(e) => e.currentTarget.style.background = '#10b981'}
@@ -95,7 +104,7 @@ const AdminWithdrawals = () => {
                         <Check size={14} /> Approve
                       </button>
                       <button
-                        onClick={() => handleProcess(wd.id, 'REJECTED')}
+                        onClick={() => handleUpdateStatus(wd.id, 'REJECTED')}
                         style={{ border: 'none', background: '#ef4444', color: 'white', padding: '6px 12px', borderRadius: '6px', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 600, fontSize: '0.75rem', transition: 'all 0.2s' }}
                         onMouseOver={(e) => e.currentTarget.style.background = '#dc2626'}
                         onMouseOut={(e) => e.currentTarget.style.background = '#ef4444'}
@@ -120,6 +129,16 @@ const AdminWithdrawals = () => {
           </tbody>
         </table>
       </div>
+
+      <PopupModal 
+        isOpen={modalCtx.isOpen} 
+        type={modalCtx.type} 
+        title={modalCtx.title} 
+        message={modalCtx.message} 
+        onConfirm={modalCtx.onConfirm}
+        showCancel={modalCtx.showCancel}
+        onClose={() => setModalCtx({ ...modalCtx, isOpen: false, showCancel: false, onConfirm: null })} 
+      />
     </div>
   );
 };

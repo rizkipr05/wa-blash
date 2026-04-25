@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
+import PopupModal from '../components/PopupModal';
 import { 
   LogOut, 
   User, 
@@ -23,12 +24,14 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [bankData, setBankData] = useState({ bankName: "", accountNumber: "", accountHolder: "" });
   const [passwords, setPasswords] = useState({ oldPassword: "", newPassword: "", confirmPassword: "" });
+  const [modalCtx, setModalCtx] = useState({ isOpen: false, type: '', title: '', message: '' });
 
   const fetchProfile = React.useCallback(async () => {
     try {
       const response = await api.get('/user/profile');
       setProfile(response.data);
       setBankData({
+        username: response.data.username || "",
         bankName: response.data.bankName || "",
         accountNumber: response.data.accountNumber || "",
         accountHolder: response.data.accountHolder || ""
@@ -47,25 +50,27 @@ const Profile = () => {
     e.preventDefault();
     try {
       await api.put('/user/profile', bankData);
-      alert('Profile updated successfully!');
-      fetchProfile();
-    } catch {
-      alert('Error updating profile');
+      setModalCtx({ isOpen: true, type: 'success', title: 'Sukses', message: 'Profil bank berhasil diperbarui!' });
+    } catch (error) {
+      console.error(error);
+      setModalCtx({ isOpen: true, type: 'error', title: 'Oops', message: 'Gagal memperbarui profil bank.' });
     }
   };
 
   const handleChangePassword = async (e) => {
     e.preventDefault();
-    if (passwords.newPassword !== passwords.confirmPassword) return alert('Passwords do not match');
+    if (passwords.newPassword !== passwords.confirmPassword) {
+      return setModalCtx({ isOpen: true, type: 'error', title: 'Oops', message: 'Password berulang tidak cocok.' });
+    }
     try {
       await api.put('/user/change-password', {
         oldPassword: passwords.oldPassword,
         newPassword: passwords.newPassword
       });
-      alert('Password updated successfully!');
+      setModalCtx({ isOpen: true, type: 'success', title: 'Sukses', message: 'Password Anda telah berhasil diperbarui!' });
       setPasswords({ oldPassword: "", newPassword: "", confirmPassword: "" });
     } catch (error) {
-      alert(error.response?.data?.message || 'Error updating password');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: error.response?.data?.message || 'Error mengubah password' });
     }
   };
 
@@ -92,7 +97,7 @@ const Profile = () => {
             </div>
             <div>
               <h1 className="header-title">WainAja</h1>
-              <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>Profil Saya</p>
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>Profil Saya</p>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
@@ -109,19 +114,21 @@ const Profile = () => {
             <div className="profile-form-grid">
               <div className="form-group">
                 <label className="form-label">Username</label>
-                <input type="text" value={profile?.username || ""} readOnly style={{ background: '#f8fafc', cursor: 'not-allowed' }} />
+                <input 
+                  type="text" 
+                  value={bankData.username} 
+                  onChange={(e) => setBankData({...bankData, username: e.target.value})} 
+                  placeholder="Ketik username baru"
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Nama Bank</label>
-                <select 
-                  className="referral-input" 
-                  style={{ width: '100%', height: '42px' }}
+                <input 
+                  type="text"
                   value={bankData.bankName}
                   onChange={(e) => setBankData({...bankData, bankName: e.target.value})}
-                >
-                  <option value="">Pilih Bank / E-Wallet</option>
-                  <option>DANA</option><option>OVO</option><option>GoPay</option><option>BCA</option><option>Mandiri</option>
-                </select>
+                  placeholder="Ketik Nama Bank (Mandiri, BCA, DANA...)" 
+                />
               </div>
               <div className="form-group">
                 <label className="form-label">Nomor Rekening</label>
@@ -217,6 +224,14 @@ const Profile = () => {
           ))}
         </nav>
       </main>
+
+      <PopupModal 
+        isOpen={modalCtx.isOpen} 
+        type={modalCtx.type} 
+        title={modalCtx.title} 
+        message={modalCtx.message} 
+        onClose={() => setModalCtx({ ...modalCtx, isOpen: false })} 
+      />
     </div>
   );
 };

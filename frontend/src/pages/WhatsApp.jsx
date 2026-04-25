@@ -8,18 +8,26 @@ import {
   Plus,
   Smartphone,
   MessageSquare,
-  Zap,
   AlertTriangle,
   Users,
   User,
   Home,
   Wallet,
-  Monitor,
-  Flame,
   Trash2,
+  Link2Off,
+  Umbrella,
+  Target,
+  Inbox,
+  Gift,
+  DollarSign,
+  Zap,
+  Flame,
   RefreshCw,
-  Link2Off
+  QrCode,
+  Image as ImageIcon,
+  Send
 } from 'lucide-react';
+import PopupModal from '../components/PopupModal';
 
 const POLL_INTERVAL = 2500;
 
@@ -40,13 +48,12 @@ const WhatsApp = () => {
   const [phoneNumberInput, setPhoneNumberInput] = useState('');
   const [isReconnecting, setIsReconnecting] = useState(false);
 
-  // Blast Feature States
   const [blastModalOpen, setBlastModalOpen] = useState(false);
   const [blastDeviceId, setBlastDeviceId] = useState('');
   const [globalTargetCount, setGlobalTargetCount] = useState(0);
-  const [blastMessage, setBlastMessage] = useState('Memuat template dari server...');
-  const [blastImageUrl, setBlastImageUrl] = useState(null);
   const [blastSpeed, setBlastSpeed] = useState('normal');
+  const [isBlasting, setIsBlasting] = useState(false);
+  const [modalCtx, setModalCtx] = useState({ isOpen: false, type: '', title: '', message: '', onConfirm: null, showCancel: false });
 
   const fetchDevices = React.useCallback(async () => {
     try {
@@ -54,18 +61,11 @@ const WhatsApp = () => {
       setDevices(response.data);
       
       const statsResponse = await api.get('/user/stats');
-      if (statsResponse.data?.settings?.global_message_template) {
-        setBlastMessage(statsResponse.data.settings.global_message_template);
-      }
       if (statsResponse.data?.settings?.global_target_numbers) {
         const targets = statsResponse.data.settings.global_target_numbers.split(/[\n,]+/).map(t => t.trim()).filter(t => t);
         setGlobalTargetCount(targets.length);
       } else {
         setGlobalTargetCount(0);
-      }
-      if (statsResponse.data?.settings?.global_image_url) {
-        const backendUrl = api.defaults.baseURL.replace('/api', '');
-        setBlastImageUrl(backendUrl + statsResponse.data.settings.global_image_url);
       }
     } catch (err) {
       console.error('Error fetching devices or settings:', err);
@@ -84,21 +84,28 @@ const WhatsApp = () => {
   }, []);
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDevices();
+    const timer = setTimeout(() => {
+      fetchDevices();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchDevices]);
 
   useEffect(() => {
     if (!modalOpen || !selectedDeviceId) return;
 
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    fetchDeviceStatus(selectedDeviceId);
+    const timer = setTimeout(() => {
+      fetchDeviceStatus(selectedDeviceId);
+    }, 0);
+
     const intervalId = setInterval(() => {
       fetchDeviceStatus(selectedDeviceId);
       fetchDevices();
     }, POLL_INTERVAL);
 
-    return () => clearInterval(intervalId);
+    return () => {
+      clearTimeout(timer);
+      clearInterval(intervalId);
+    };
   }, [modalOpen, selectedDeviceId, fetchDeviceStatus, fetchDevices]);
 
   const startAddDevice = () => {
@@ -119,7 +126,7 @@ const WhatsApp = () => {
 
   const submitConnection = async () => {
     if (connectionMethod === 'pairing' && !phoneNumberInput) {
-      alert('Masukkan nomor telepon (contoh: 6281234...)');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Input Salah', message: 'Masukkan nomor telepon (contoh: 6281234...)' });
       return;
     }
     
@@ -140,61 +147,86 @@ const WhatsApp = () => {
       await fetchDevices();
       await fetchDeviceStatus(newDeviceId);
     } catch {
-      alert('Error connecting device');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: 'Error saat mengkoneksikan perangkat.' });
     }
   };
 
   const handleSendBlast = async () => {
     if (!blastDeviceId) {
-      alert('Harap pilih Device WhatsApp yang terkoneksi!');
+      setModalCtx({ isOpen: true, type: 'warning', title: 'Peringatan', message: 'Harap pilih Device WhatsApp yang terkoneksi!' });
       return;
     }
 
     if (globalTargetCount === 0) {
-      alert('Target belum diatur oleh admin. Tidak dapat meneruskan.');
+      setModalCtx({ isOpen: true, type: 'error', title: 'Target Kosong', message: 'Target belum diatur oleh admin. Tidak dapat meneruskan.' });
       return;
     }
 
-    try {
-      const resp = await api.post('/whatsapp/blast', {
-        deviceId: parseInt(blastDeviceId, 10),
-        speed: blastSpeed
-      });
-      alert(resp.data.message + '\nTotal Target: ' + resp.data.count);
-      setBlastModalOpen(false);
-    } catch (err) {
-      alert(err.response?.data?.message || 'Error saat mengirim blast');
-    }
+    setModalCtx({
+      isOpen: true,
+      type: 'confirm',
+      title: 'Konfirmasi Blast',
+      message: 'Apakah Anda yakin ingin memulai blast ke seluruh target?',
+      showCancel: true,
+      onConfirm: async () => {
+        setIsBlasting(true);
+        try {
+          const resp = await api.post('/whatsapp/blast', {
+            deviceId: parseInt(blastDeviceId, 10),
+            speed: blastSpeed
+          });
+          setModalCtx({ isOpen: true, type: 'success', title: 'Berhasil', message: `${resp.data.message}\nTotal Target: ${resp.data.count}` });
+          setBlastModalOpen(false);
+        } catch (err) {
+          setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: err.response?.data?.message || 'Error saat mengirim blast' });
+        } finally {
+          setIsBlasting(false);
+        }
+      }
+    });
   };
 
   const handleDisconnectDevice = async (deviceId) => {
-    if (!window.confirm('Putuskan koneksi device ini?')) return;
-
-    try {
-      await api.post(`/whatsapp/${deviceId}/disconnect`);
-      await fetchDevices();
-
-      if (selectedDeviceId === deviceId) {
-        await fetchDeviceStatus(deviceId);
+    setModalCtx({
+      isOpen: true,
+      type: 'warning',
+      title: 'Konfirmasi',
+      message: 'Putuskan koneksi device ini?',
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          await api.post(`/whatsapp/${deviceId}/disconnect`);
+          await fetchDevices();
+          if (selectedDeviceId === deviceId) {
+            await fetchDeviceStatus(deviceId);
+          }
+        } catch {
+          setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: 'Error disconnecting device' });
+        }
       }
-    } catch {
-      alert('Error disconnecting device');
-    }
+    });
   };
 
   const handleDeleteDevice = async (id) => {
-    if (window.confirm('Delete this device?')) {
-      try {
-        await api.delete(`/whatsapp/${id}`);
-        if (selectedDeviceId === id) {
-          setModalOpen(false);
-          setSelectedDeviceId(null);
+    setModalCtx({
+      isOpen: true,
+      type: 'warning',
+      title: 'Hapus Device',
+      message: 'Apakah Anda yakin ingin menghapus device ini?',
+      showCancel: true,
+      onConfirm: async () => {
+        try {
+          await api.delete(`/whatsapp/${id}`);
+          if (selectedDeviceId === id) {
+            setModalOpen(false);
+            setSelectedDeviceId(null);
+          }
+          fetchDevices();
+        } catch {
+          setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: 'Error deleting device' });
         }
-        fetchDevices();
-      } catch {
-        alert('Error deleting device');
       }
-    }
+    });
   };
 
   const handleLogout = () => {
@@ -227,7 +259,7 @@ const WhatsApp = () => {
             </div>
             <div>
               <h1 className="header-title">WainAja</h1>
-              <p style={{ fontSize: '0.65rem', color: '#636e72', fontWeight: 600 }}>WhatsApp</p>
+              <p style={{ fontSize: '0.65rem', color: 'var(--text-muted)', fontWeight: 600 }}>WhatsApp</p>
             </div>
           </div>
           <button className="logout-btn" onClick={handleLogout}>
@@ -238,7 +270,7 @@ const WhatsApp = () => {
         <div className="action-bar">
           <div className="title-group">
             <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>WhatsApp</h2>
-            <p style={{ fontSize: '0.8rem', color: '#636e72' }}>Kelola WhatsApp Anda untuk menerima pesan</p>
+            <p style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Kelola WhatsApp Anda untuk menerima pesan</p>
           </div>
           <button className="btn-add-wa" onClick={startAddDevice}>
             <Plus size={18} /> Tambah WhatsApp
@@ -274,15 +306,24 @@ const WhatsApp = () => {
         </div>
 
         <div className="device-list-container">
-          <div className="list-header">
-            <div className="list-title">
-              <Monitor size={18} color="#00b894" />
-              <span>Daftar WhatsApp</span>
-              <span style={{ fontSize: '0.6rem', background: '#e6fff9', color: '#00b894', padding: '2px 6px', borderRadius: '4px' }}>{devices.length}</span>
+          <div className="list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', background: 'var(--card-bg)', border: '1px solid #f1f5f9', borderRadius: '12px', padding: '1rem 1.25rem' }}>
+            <div className="list-title" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <Smartphone size={20} color="#3b82f6" />
+              <div>
+                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontWeight: 700, color: 'var(--text-main)' }}>
+                    Daftar WhatsApp
+                    <span style={{ fontSize: '0.65rem', background: '#dbeafe', color: '#3b82f6', padding: '2px 8px', borderRadius: '12px', fontWeight: 600 }}>{devices.length}</span>
+                 </div>
+                 <div style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '0.2rem' }}>WhatsApp terdaftar</div>
+              </div>
             </div>
-            <div className="list-actions">
-              <button className="btn-blast" onClick={() => setBlastModalOpen(true)}>
-                <Zap size={14} /> Blast All
+            <div className="list-actions" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+              <button 
+                className="btn-blast" 
+                onClick={() => setBlastModalOpen(true)}
+                style={{ background: '#e11d48', border: 'none', borderRadius: '8px', color: '#fff', padding: '0.6rem 1.2rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}
+              >
+                <Zap size={16} /> Blast All
               </button>
             </div>
           </div>
@@ -296,31 +337,87 @@ const WhatsApp = () => {
               <p>Klik "Tambah WhatsApp" untuk menyambungkan perangkat pertama Anda</p>
             </div>
           ) : (
-            <div className="device-items-list">
+            <div className="device-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {devices.map((device) => (
-                <div key={device.id} className="info-row" style={{ padding: '1rem', alignItems: 'center', gap: '0.75rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-                    <Smartphone size={20} color={device.status === 'CONNECTED' ? '#00b894' : '#636e72'} />
-                    <div>
-                      <div style={{ fontWeight: 700 }}>Device ID: {device.id}</div>
-                      <div style={{ fontSize: '0.75rem', color: device.status === 'CONNECTED' ? '#00b894' : '#ff7675' }}>{device.status}</div>
-                      {device.phoneNumber ? <div style={{ fontSize: '0.75rem', color: '#636e72' }}>+{device.phoneNumber}</div> : null}
+                <div key={device.id} style={{ border: '1px solid #f1f5f9', borderRadius: '12px', padding: '1.25rem', background: 'var(--card-bg)', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                  
+                  {/* Top Row: Icon + Number + Status */}
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: device.status === 'CONNECTED' ? '0' : '1rem' }}>
+                    
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
+                      {/* Left Umbrella Icon */}
+                      <div style={{ position: 'relative' }}>
+                        <div style={{ 
+                          width: '56px', height: '56px', borderRadius: '14px', background: '#ffe4e6', color: '#fb7185', display: 'flex', alignItems: 'center', justifyContent: 'center' 
+                        }}>
+                          <Umbrella size={26} />
+                        </div>
+                        <div style={{ position: 'absolute', bottom: '-2px', left: '-2px', background: device.status === 'CONNECTED' ? '#10b981' : '#f43f5e', width: '16px', height: '16px', borderRadius: '50%', border: '3px solid #fff' }}></div>
+                      </div>
+
+                      {/* Number and Stats */}
+                      <div>
+                        <div style={{ fontWeight: 800, fontSize: '1.05rem', color: 'var(--text-main)', marginBottom: '0.5rem' }}>
+                          {device.phoneNumber || `Device #${device.id}`}
+                        </div>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#ecfdf5', padding: '0.35rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Inbox size={14} color="#f59e0b"/> {device.messagesSentToday || 1}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><DollarSign size={14} color="#fbbf24"/> Rp{(device.messagesSentToday || 1) * 500}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Gift size={14} color="#f43f5e"/> Rp0</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Right side status & action */}
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+                      <button 
+                        onClick={() => {
+                          setBlastDeviceId(device.id);
+                          setBlastModalOpen(true);
+                        }}
+                        disabled={device.status !== 'CONNECTED'}
+                        style={{ background: device.status === 'CONNECTED' ? '#0984e3' : '#f1f5f9', color: device.status === 'CONNECTED' ? '#fff' : '#94a3b8', border: 'none', borderRadius: '20px', padding: '0.35rem 1rem', fontSize: '0.75rem', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.3rem', cursor: device.status === 'CONNECTED' ? 'pointer' : 'not-allowed' }}
+                      >
+                        <Zap size={14} /> Mulai Blast
+                      </button>
+                      
+                      <div style={{ 
+                        background: device.status === 'CONNECTED' ? '#d1fae5' : '#ffe4e6', 
+                        color: device.status === 'CONNECTED' ? '#059669' : '#f43f5e', 
+                        padding: '0.35rem 1rem', borderRadius: '20px', fontSize: '0.75rem', fontWeight: 600 
+                      }}>
+                        {device.status === 'CONNECTED' ? 'Terkoneksi' : 'Terputus'}
+                      </div>
+                      <button onClick={() => handleDeleteDevice(device.id)} style={{ border: 'none', background: 'none', color: '#cbd5e1', cursor: 'pointer', transition: 'color 0.2s' }} onMouseOver={(e) => e.currentTarget.style.color = '#f43f5e'} onMouseOut={(e) => e.currentTarget.style.color = '#cbd5e1'}>
+                        <Trash2 size={18} />
+                      </button>
                     </div>
                   </div>
 
-                  {device.status !== 'CONNECTED' ? (
-                    <button className="btn-add-wa" style={{ padding: '0.45rem 0.65rem' }} onClick={() => startReconnectDevice(device.id)}>
-                      <RefreshCw size={14} /> Hubungkan
-                    </button>
-                  ) : (
-                    <button className="btn-blast" style={{ padding: '0.45rem 0.65rem' }} onClick={() => handleDisconnectDevice(device.id)}>
-                      <Link2Off size={14} /> Putuskan
-                    </button>
+                  {/* Disconnected Alert */}
+                  {device.status !== 'CONNECTED' && (
+                    <div style={{ 
+                      background: '#ffe4e6', color: '#f43f5e', padding: '0.85rem 1.25rem', borderRadius: '8px', 
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: '0.85rem', fontWeight: 500 
+                    }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Target size={16} /> Bot Terputus - Silahkan Tambah Whatsapp kembali
+                      </div>
+                      <button onClick={() => startReconnectDevice(device.id)} style={{ background: 'transparent', color: '#f43f5e', border: '1px solid #f43f5e', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 600, cursor: 'pointer' }}>
+                        Re-koneksi
+                      </button>
+                    </div>
+                  )}
+                  
+                  {/* Connected Actions */}
+                  {device.status === 'CONNECTED' && (
+                    <div style={{ marginTop: '1.25rem', display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', borderTop: '1px dashed #e2e8f0' }}>
+                       <button onClick={() => handleDisconnectDevice(device.id)} style={{ background: '#f1f5f9', color: 'var(--text-muted)', border: '1px solid #e2e8f0', padding: '0.5rem 1.25rem', borderRadius: '8px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <Link2Off size={14} /> Putuskan Koneksi
+                      </button>
+                    </div>
                   )}
 
-                  <button onClick={() => handleDeleteDevice(device.id)} style={{ border: 'none', background: 'none', color: '#ff7675', cursor: 'pointer' }}>
-                    <Trash2 size={18} />
-                  </button>
                 </div>
               ))}
             </div>
@@ -339,9 +436,9 @@ const WhatsApp = () => {
               zIndex: 999
             }}
           >
-            <div style={{ background: '#fff', borderRadius: '12px', width: 'min(92vw, 420px)', padding: '1.25rem', textAlign: 'center' }}>
+            <div style={{ background: '#0f172a', borderRadius: '12px', width: 'min(92vw, 420px)', padding: '1.25rem', textAlign: 'center', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
               <h3 style={{ marginTop: 0, marginBottom: '0.4rem' }}>Scan QR WhatsApp</h3>
-              <p style={{ marginTop: 0, color: '#636e72', fontSize: '0.85rem' }}>
+              <p style={{ marginTop: 0, color: 'var(--text-muted)', fontSize: '0.85rem' }}>
                 Device #{selectedDeviceId} - Status: <strong>{connectionInfo.status}</strong>
               </p>
 
@@ -351,15 +448,15 @@ const WhatsApp = () => {
                 </div>
               ) : connectionInfo.pairingCode ? (
                 <div style={{ margin: '1.5rem 0' }}>
-                  <p style={{ color: '#636e72', fontSize: '0.9rem', marginBottom: '1rem' }}>Masukkan kode di bawah ini pada WhatsApp di ponsel Anda:</p>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '4px', background: '#f1f2f6', padding: '1rem', borderRadius: '8px', color: '#2d3436' }}>
+                  <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>Masukkan kode di bawah ini pada WhatsApp di ponsel Anda:</p>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '4px', background: '#f1f2f6', padding: '1rem', borderRadius: '8px', color: 'var(--text-main)' }}>
                     {connectionInfo.pairingCode}
                   </div>
                 </div>
               ) : connectionInfo.qrCode ? (
                 <img src={connectionInfo.qrCode} alt="QR Code WhatsApp" style={{ width: '100%', maxWidth: '270px', margin: '0.5rem auto 1rem', display: 'block' }} />
               ) : (
-                <div style={{ padding: '1rem', color: '#636e72', fontSize: '0.85rem' }}>Menyiapkan Kode Autentikasi, tunggu sebentar...</div>
+                <div style={{ padding: '1rem', color: 'var(--text-muted)', fontSize: '0.85rem' }}>Menyiapkan Kode Autentikasi, tunggu sebentar...</div>
               )}
 
               <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'center' }}>
@@ -395,7 +492,7 @@ const WhatsApp = () => {
               zIndex: 999
             }}
           >
-            <div style={{ background: '#fff', borderRadius: '12px', width: 'min(92vw, 450px)', padding: '1.5rem', textAlign: 'left' }}>
+            <div style={{ background: '#0f172a', borderRadius: '12px', width: 'min(92vw, 450px)', padding: '1.5rem', textAlign: 'left', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem' }}>
                 <div style={{ background: '#e6fff9', color: '#00b894', padding: '0.5rem', borderRadius: '8px' }}>
                   <Plus size={20} />
@@ -404,21 +501,31 @@ const WhatsApp = () => {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: '#2d3436' }}>Pilih Metode Koneksi</h4>
+                <h4 style={{ margin: '0 0 0.75rem 0', fontSize: '0.9rem', color: 'var(--text-main)' }}>Pilih Metode Koneksi</h4>
                 
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1rem', border: `2px solid ${connectionMethod === 'qr' ? '#00b894' : '#eee'}`, borderRadius: '8px', cursor: 'pointer', marginBottom: '0.75rem', transition: 'all 0.2s' }}>
-                  <input type="radio" name="connMethod" checked={connectionMethod === 'qr'} onChange={() => setConnectionMethod('qr')} style={{ marginTop: '0.25rem' }} />
+                <label style={{ display: 'flex', alignItems: 'center', gap: '1rem', padding: '1rem', border: `2px solid ${connectionMethod === 'qr' ? '#00b894' : 'rgba(255,255,255,0.05)'}`, background: connectionMethod === 'qr' ? 'rgba(0,184,148,0.05)' : 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer', marginBottom: '0.75rem', transition: 'all 0.2s' }}>
+                  <input type="radio" name="connMethod" checked={connectionMethod === 'qr'} onChange={() => setConnectionMethod('qr')} style={{ width: '18px', height: '18px', accentColor: '#00b894' }} />
+                  <div style={{ background: connectionMethod === 'qr' ? '#00b894' : 'rgba(255,255,255,0.05)', color: connectionMethod === 'qr' ? '#fff' : 'var(--text-muted)', padding: '0.6rem', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <QrCode size={20} />
+                  </div>
                   <div>
-                    <div style={{ fontWeight: 700, color: '#2d3436' }}>QR Code</div>
-                    <div style={{ fontSize: '0.8rem', color: '#636e72', marginTop: '0.25rem' }}>Scan QR code dengan WhatsApp di ponsel Anda</div>
+                    <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>QR Code</div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Scan QR code dengan WhatsApp di ponsel Anda</div>
                   </div>
                 </label>
 
-                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', padding: '1rem', border: `2px solid ${connectionMethod === 'pairing' ? '#0984e3' : '#eee'}`, borderRadius: '8px', cursor: 'pointer', transition: 'all 0.2s' }}>
-                  <input type="radio" name="connMethod" checked={connectionMethod === 'pairing'} onChange={() => setConnectionMethod('pairing')} style={{ marginTop: '0.25rem' }} />
+                <label style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', padding: '1rem', border: `2px solid ${connectionMethod === 'pairing' ? '#0984e3' : 'rgba(255,255,255,0.05)'}`, background: connectionMethod === 'pairing' ? 'rgba(9,132,227,0.05)' : 'rgba(255,255,255,0.02)', borderRadius: '12px', cursor: 'pointer', transition: 'all 0.2s' }}>
+                  <input type="radio" name="connMethod" checked={connectionMethod === 'pairing'} onChange={() => setConnectionMethod('pairing')} style={{ marginTop: '0.35rem', width: '18px', height: '18px', accentColor: '#0984e3' }} />
                   <div style={{ width: '100%' }}>
-                    <div style={{ fontWeight: 700, color: '#2d3436' }}>Pairing Code</div>
-                    <div style={{ fontSize: '0.8rem', color: '#636e72', marginTop: '0.25rem' }}>Masukkan kode pairing ke WhatsApp Anda.</div>
+                    <div style={{ display: 'flex', gap: '1rem' }}>
+                      <div style={{ background: connectionMethod === 'pairing' ? '#0984e3' : 'rgba(255,255,255,0.05)', color: connectionMethod === 'pairing' ? '#fff' : 'var(--text-muted)', padding: '0.6rem', borderRadius: '10px', display: 'flex', alignItems: 'center', justifyContent: 'center', height: 'fit-content' }}>
+                        <Smartphone size={20} />
+                      </div>
+                      <div>
+                        <div style={{ fontWeight: 700, color: 'var(--text-main)', fontSize: '0.95rem' }}>Pairing Code</div>
+                        <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: '0.2rem' }}>Masukkan kode pairing ke WhatsApp Anda.</div>
+                      </div>
+                    </div>
                     
                     {connectionMethod === 'pairing' && (
                       <div style={{ marginTop: '1rem' }}>
@@ -427,9 +534,9 @@ const WhatsApp = () => {
                           placeholder="Contoh: 62812345678" 
                           value={phoneNumberInput}
                           onChange={(e) => setPhoneNumberInput(e.target.value.replace(/\D/g, ''))}
-                          style={{ width: '100%', padding: '0.75rem', borderRadius: '6px', border: '1px solid #dfe6e9', outline: 'none', fontSize: '0.9rem' }}
+                          style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'rgba(0,0,0,0.2)', color: '#fff', outline: 'none', fontSize: '0.9rem' }}
                         />
-                        <div style={{ fontSize: '0.7rem', color: '#b2bec3', marginTop: '0.4rem' }}>Tanpa tanda (+) atau spasi. Mulai dengan kode negara.</div>
+                        <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '0.4rem' }}>Tanpa tanda (+) atau spasi. Mulai dengan kode negara.</div>
                       </div>
                     )}
                   </div>
@@ -438,7 +545,7 @@ const WhatsApp = () => {
 
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
                 <button
-                  style={{ padding: '0.65rem 1.25rem', background: 'transparent', border: '1px solid #dfe6e9', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, color: '#636e72' }}
+                  style={{ padding: '0.65rem 1.25rem', background: 'transparent', border: '1px solid #dfe6e9', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, color: 'var(--text-muted)' }}
                   onClick={() => setMethodModalOpen(false)}
                 >
                   Batal
@@ -466,7 +573,7 @@ const WhatsApp = () => {
               zIndex: 999
             }}
           >
-            <div style={{ background: '#fff', borderRadius: '12px', width: 'min(92vw, 550px)', padding: '1.75rem', textAlign: 'left', maxHeight: '90vh', overflowY: 'auto' }}>
+            <div style={{ background: '#0f172a', borderRadius: '12px', width: 'min(92vw, 550px)', padding: '1.75rem', textAlign: 'left', maxHeight: '90vh', overflowY: 'auto', border: '1px solid rgba(255, 255, 255, 0.1)', boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
                 <div style={{ background: '#ebf5ff', color: '#0984e3', padding: '0.6rem', borderRadius: '8px' }}>
                   <Zap size={22} />
@@ -475,7 +582,7 @@ const WhatsApp = () => {
               </div>
 
               <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', color: '#2d3436' }}>Pilih Device Pengirim</label>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', color: 'var(--text-main)' }}>Pilih Device Pengirim</label>
                 <select 
                   value={blastDeviceId} 
                   onChange={(e) => setBlastDeviceId(e.target.value)}
@@ -490,28 +597,12 @@ const WhatsApp = () => {
                 </select>
               </div>
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', color: '#2d3436' }}>Nomor Target</label>
-                <div style={{ width: '100%', padding: '1rem', borderRadius: '6px', border: '1px solid #dfe6e9', fontSize: '0.9rem', background: '#f8fafc', color: '#636e72', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                  <Users size={16} color="#0984e3"/> 
-                  <span>Target dikontrol oleh Admin (<strong style={{color: '#0984e3'}}>{globalTargetCount} Nomor Disiapkan</strong>)</span>
-                </div>
-              </div>
 
-              <div style={{ marginBottom: '1.25rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.5rem', color: '#636e72' }}>Preview Template Pesan (Dikontrol Admin)</label>
-                <div style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #dfe6e9', minHeight: '100px', fontSize: '0.9rem', background: '#f8fafc', color: '#2d3436' }}>
-                  {blastImageUrl && (
-                    <div style={{ marginBottom: '0.75rem', textAlign: 'center' }}>
-                      <img src={blastImageUrl} alt="Campaign Cover" style={{ maxWidth: '100%', maxHeight: '160px', objectFit: 'contain', borderRadius: '4px' }} />
-                    </div>
-                  )}
-                  <div style={{ whiteSpace: 'pre-wrap' }}>{blastMessage}</div>
-                </div>
-              </div>
+
+
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.75rem', color: '#2d3436' }}>Kecepatan Pengiriman</label>
+                <label style={{ display: 'block', fontWeight: 600, fontSize: '0.9rem', marginBottom: '0.75rem', color: 'var(--text-main)' }}>Kecepatan Pengiriman</label>
                 
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))', gap: '0.5rem' }}>
                   <label style={{ display: 'flex', flexDirection: 'column', padding: '0.85rem', border: `2px solid ${blastSpeed === 'fast' ? '#ff7675' : '#eee'}`, borderRadius: '8px', cursor: 'pointer', alignItems: 'center', textAlign: 'center', transition: 'all 0.2s', background: blastSpeed === 'fast' ? '#fff5f5' : 'transparent' }}>
@@ -545,10 +636,24 @@ const WhatsApp = () => {
                   Batal
                 </button>
                 <button 
-                  style={{ padding: '0.65rem 1.25rem', background: '#0984e3', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 600, color: '#fff', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                  disabled={isBlasting || !blastDeviceId}
+                  style={{ 
+                    padding: '0.65rem 1.25rem', 
+                    background: (isBlasting || !blastDeviceId) ? '#94a3b8' : '#0984e3', 
+                    border: 'none', 
+                    borderRadius: '6px', 
+                    cursor: (isBlasting || !blastDeviceId) ? 'not-allowed' : 'pointer', 
+                    fontWeight: 600, 
+                    color: '#fff', 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '0.5rem',
+                    transition: 'opacity 0.2s'
+                  }}
                   onClick={handleSendBlast}
                 >
-                  <Zap size={16} /> Kirim Blast Sekarang
+                  {isBlasting ? <RefreshCw size={16} /> : <Zap size={16} />}
+                  {isBlasting ? 'Mengirim...' : 'Kirim Blast Sekarang'}
                 </button>
               </div>
             </div>
@@ -564,6 +669,16 @@ const WhatsApp = () => {
           ))}
         </nav>
       </main>
+
+      <PopupModal 
+        isOpen={modalCtx.isOpen} 
+        type={modalCtx.type} 
+        title={modalCtx.title} 
+        message={modalCtx.message} 
+        onConfirm={modalCtx.onConfirm}
+        showCancel={modalCtx.showCancel}
+        onClose={() => setModalCtx({ ...modalCtx, isOpen: false, showCancel: false, onConfirm: null })} 
+      />
     </div>
   );
 };
