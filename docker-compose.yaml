@@ -46,9 +46,9 @@ services:
       - wa_sessions:/app/wa-sessions
     networks:
       - app_network
-    # Run prisma migrate deploy before starting the app
+    # Run prisma db push before starting the app to sync schema directly
     command: >
-      sh -c "npx prisma migrate deploy && node src/app.js"
+      sh -c "npx prisma db push && node src/app.js"
 
   # ─── Frontend (React/Vite built → Nginx) ──────────────────────────────────
   frontend:
