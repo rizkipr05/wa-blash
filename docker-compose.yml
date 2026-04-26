@@ -64,6 +64,22 @@ services:
     networks:
       - app_network
 
+  # ─── phpMyAdmin ─────────────────────────────────────────────────────────────
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: setorwader_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      UPLOAD_LIMIT: 300M
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - app_network
+
 # ─── Volumes ──────────────────────────────────────────────────────────────────
 volumes:
   mysql_data:
