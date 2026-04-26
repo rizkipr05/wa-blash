@@ -15,6 +15,23 @@ const sessions = new Map();
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
+const normalizePairingPhoneNumber = (raw) => {
+  let cleaned = String(raw || '').replace(/\D/g, '');
+  if (!cleaned) return null;
+
+  if (cleaned.startsWith('0')) {
+    cleaned = '62' + cleaned.substring(1);
+  } else if (cleaned.startsWith('8')) {
+    cleaned = '62' + cleaned;
+  }
+
+  if (!/^\d{10,15}$/.test(cleaned)) {
+    throw new Error('Invalid phone number format for pairing');
+  }
+
+  return cleaned;
+};
+
 const formatWhatsAppNumber = (number) => {
   let cleaned = String(number).replace(/\D/g, '');
   if (cleaned.startsWith('0')) {
@@ -93,10 +110,7 @@ const connectDevice = async (device, options = {}) => {
   });
 
   if (options.method === 'pairing' && options.phoneNumber && !state.creds.me) {
-    if (options.phoneNumber.startsWith('0')) {
-      options.phoneNumber = '62' + options.phoneNumber.substring(1);
-    }
-    const cleanNumber = options.phoneNumber.replace(/\D/g, '');
+    const cleanNumber = normalizePairingPhoneNumber(options.phoneNumber);
     
     sock.waitForConnectionUpdate((update) => !!update.qr).then(async () => {
       try {

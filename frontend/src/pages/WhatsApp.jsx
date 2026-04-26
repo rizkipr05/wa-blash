@@ -147,8 +147,13 @@ const WhatsApp = () => {
       setModalOpen(true);
       await fetchDevices();
       await fetchDeviceStatus(newDeviceId);
-    } catch {
-      setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: 'Error saat mengkoneksikan perangkat.' });
+    } catch (err) {
+      setModalCtx({
+        isOpen: true,
+        type: 'error',
+        title: 'Gagal',
+        message: err.response?.data?.message || 'Error saat mengkoneksikan perangkat.'
+      });
     }
   };
 

@@ -46,7 +46,7 @@ const AdminLogin = () => {
     <div className="admin-login-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div className="glass-card" style={{ borderTop: '4px solid #0984e3' }}>
         <div className="logo-wrapper">
-          <div className="logo-box" style={{ background: '#0984e3' }}>
+          <div className="logo-box">
             <img src={brandLogo} alt="Logo Admin" style={{ width: '40px', height: '40px' }} />
           </div>
         </div>

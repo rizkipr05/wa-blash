@@ -44,6 +44,9 @@ exports.addDevice = async (req, res) => {
       runtime
     });
   } catch (error) {
+    if (error.message === 'Invalid phone number format for pairing') {
+      return res.status(400).json({ message: 'Format nomor pairing tidak valid. Gunakan nomor WA aktif, contoh: 628123456789.' });
+    }
     res.status(500).json({ message: 'Error adding device', error: error.message });
   }
 };
@@ -63,6 +66,9 @@ exports.connectDevice = async (req, res) => {
     });
     res.json({ message: 'Connection started', runtime });
   } catch (error) {
+    if (error.message === 'Invalid phone number format for pairing') {
+      return res.status(400).json({ message: 'Format nomor pairing tidak valid. Gunakan nomor WA aktif, contoh: 628123456789.' });
+    }
     res.status(500).json({ message: 'Error connecting device', error: error.message });
   }
 };

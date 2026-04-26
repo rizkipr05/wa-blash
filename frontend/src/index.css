@@ -77,12 +77,12 @@ body {
 .logo-box {
   width: 64px;
   height: 64px;
-  background: var(--primary);
+  background: transparent;
   border-radius: var(--radius-md);
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 16px rgba(37, 99, 235, 0.25);
+  box-shadow: none;
 }
 
 .logo-box img {
@@ -564,6 +564,8 @@ input:focus, select:focus {
   .admin-login-page .logo-box {
     width: 54px;
     height: 54px;
+    background: transparent !important;
+    box-shadow: none !important;
   }
   .login-page .logo-box img,
   .register-page .logo-box img,
