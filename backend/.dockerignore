@@ -1,0 +1,11 @@
+node_modules
+.wa-sessions
+wa-sessions
+uploads
+*.log
+.env
+.env.*
+!.env.example
+prisma/migrations
+npm-debug.log*
+.DS_Store

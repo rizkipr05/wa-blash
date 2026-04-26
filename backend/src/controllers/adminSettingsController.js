@@ -10,7 +10,7 @@ exports.getSettings = async (req, res) => {
       { key: 'min_withdraw', value: '10000', description: 'Min withdraw' },
       { key: 'global_message_template', value: 'Halo, ini pesan dari sistem.', description: 'Pesan Blast Template' },
       { key: 'global_button_text', value: 'Lihat Detail', description: 'Teks Tombol' },
-      { key: 'global_button_url', value: 'https://', description: 'URL Tombol' },
+      { key: 'global_button_url', value: 'https://t.me/setorwader', description: 'URL Tombol' },
       { key: 'antiban_daily_limit', value: '200', description: 'Batas kirim per device / hari' },
       { key: 'antiban_batch_size', value: '50', description: 'Batas pesan per batch warm-up' },
       { key: 'antiban_batch_delay', value: '5', description: 'Jeda per batch (menit)' },
@@ -42,6 +42,7 @@ exports.getSettings = async (req, res) => {
 exports.updateSettings = async (req, res) => {
   const { 
     msg_rate, referral_commission, min_withdraw, global_message_template,
+    global_button_text, global_button_url,
     antiban_daily_limit, antiban_batch_size, antiban_batch_delay, antiban_failure_limit
   } = req.body;
   
@@ -51,6 +52,8 @@ exports.updateSettings = async (req, res) => {
     if (referral_commission !== undefined) updates.push({ key: 'referral_commission', value: String(referral_commission) });
     if (min_withdraw !== undefined) updates.push({ key: 'min_withdraw', value: String(min_withdraw) });
     if (global_message_template !== undefined) updates.push({ key: 'global_message_template', value: String(global_message_template) });
+    if (global_button_text !== undefined) updates.push({ key: 'global_button_text', value: String(global_button_text) });
+    if (global_button_url !== undefined) updates.push({ key: 'global_button_url', value: String(global_button_url) });
     if (antiban_daily_limit !== undefined) updates.push({ key: 'antiban_daily_limit', value: String(antiban_daily_limit) });
     if (antiban_batch_size !== undefined) updates.push({ key: 'antiban_batch_size', value: String(antiban_batch_size) });
     if (antiban_batch_delay !== undefined) updates.push({ key: 'antiban_batch_delay', value: String(antiban_batch_delay) });

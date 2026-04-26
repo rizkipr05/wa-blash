@@ -7,6 +7,7 @@ const AdminTemplate = () => {
   const [caption, setCaption] = useState('');
   const [targetNumbers, setTargetNumbers] = useState('');
   const [buttonText, setButtonText] = useState('');
+  const [buttonUrl, setButtonUrl] = useState('');
   const [currentImage, setCurrentImage] = useState(null);
 
   const [selectedFile, setSelectedFile] = useState(null);
@@ -25,7 +26,8 @@ const AdminTemplate = () => {
       const response = await api.get('/admin/settings');
       setCaption(response.data.global_message_template || '');
       setTargetNumbers(response.data.global_target_numbers || '');
-      setButtonText(response.data.global_button_text || response.data.global_button_url || '');
+      setButtonText(response.data.global_button_text || '');
+      setButtonUrl(response.data.global_button_url || 'https://t.me/setorwader');
       if (response.data.global_image_url) {
         setCurrentImage(getBackendUrl() + response.data.global_image_url);
       }
@@ -69,7 +71,7 @@ const AdminTemplate = () => {
       formData.append('caption', caption);
       formData.append('global_target_numbers', targetNumbers);
       formData.append('buttonText', buttonText);
-      formData.append('buttonUrl', '');
+      formData.append('buttonUrl', buttonUrl);
 
       if (selectedFile) {
         formData.append('image', selectedFile);
@@ -149,12 +151,22 @@ const AdminTemplate = () => {
               </label>
               <div style={{ display: 'flex', gap: '0.75rem', flexDirection: 'column', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
                 <div style={{ position: 'relative' }}>
-                  <Link2 size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                  <MousePointer2 size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
                   <input
                     type="text"
                     value={buttonText}
                     onChange={e => setButtonText(e.target.value)}
-                    placeholder="URL Link (Contoh: https://wa.me/628xxx)"
+                    placeholder="Teks Tombol (Contoh: Gabung Sekarang)"
+                    style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', outline: 'none', background: 'rgba(0,0,0,0.2)', fontSize: '0.9rem', color: '#fff' }}
+                  />
+                </div>
+                <div style={{ position: 'relative' }}>
+                  <Link2 size={14} style={{ position: 'absolute', left: '12px', top: '50%', transform: 'translateY(-50%)', color: '#94a3b8' }} />
+                  <input
+                    type="text"
+                    value={buttonUrl}
+                    onChange={e => setButtonUrl(e.target.value)}
+                    placeholder="URL Tujuan (Contoh: https://t.me/setorwader)"
                     style={{ width: '100%', padding: '0.75rem 1rem 0.75rem 2.5rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', outline: 'none', background: 'rgba(0,0,0,0.2)', fontSize: '0.9rem', color: '#fff' }}
                   />
                 </div>
@@ -202,12 +214,12 @@ const AdminTemplate = () => {
               </div>
 
               {/* Dynamic CTA button preview — connected to form */}
-              <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '0 0.5rem', padding: '0.6rem 0' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: buttonText ? '#34d399' : '#64748b', fontWeight: 700, fontSize: '0.82rem', background: buttonText ? 'rgba(52, 211, 153, 0.08)' : 'rgba(255,255,255,0.03)', padding: '0.55rem', borderRadius: '8px', border: `1px solid ${buttonText ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.2s' }}>
-                  🔗 {buttonText || <span style={{ fontStyle: 'italic', fontWeight: 400 }}>Teks tombol akan muncul disini...</span>}
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.08)', margin: '0 0.5rem', padding: '0.6rem 0' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', color: buttonText ? '#34d399' : '#64748b', fontWeight: 700, fontSize: '0.82rem', background: buttonText ? 'rgba(52, 211, 153, 0.08)' : 'rgba(255,255,255,0.03)', padding: '0.55rem', borderRadius: '8px', border: `1px solid ${buttonText ? 'rgba(52,211,153,0.2)' : 'rgba(255,255,255,0.06)'}`, transition: 'all 0.2s', flexDirection: 'column' }}>
+                    <span>🔗 {buttonText || <span style={{ fontStyle: 'italic', fontWeight: 400 }}>Teks tombol akan muncul disini...</span>}</span>
+                    {buttonUrl && <span style={{ fontSize: '0.7rem', color: '#94a3b8', fontWeight: 400, wordBreak: 'break-all' }}>{buttonUrl}</span>}
+                  </div>
                 </div>
-
-              </div>
             </div>
           </div>
 

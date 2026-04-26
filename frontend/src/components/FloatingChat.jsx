@@ -10,7 +10,7 @@ const FloatingChat = () => {
   }
 
   return (
-    <div className="floating-chat" onClick={() => window.open('https://wa.me/628123456789', '_blank')}>
+    <div className="floating-chat" onClick={() => window.open('https://t.me/setorwader', '_blank')}>
       <MessageSquareText size={28} />
     </div>
   );

@@ -1,0 +1,74 @@
+services:
+
+  # ─── MySQL Database ────────────────────────────────────────────────────────
+  mysql:
+    image: mysql:8.0
+    container_name: setorwader_mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE:-wain_db}
+      MYSQL_USER: ${MYSQL_USER:-wain_user}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - app_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
+
+  # ─── Backend (Node.js + Express + Prisma) ─────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: setorwader_backend
+    restart: unless-stopped
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 3000
+      DATABASE_URL: mysql://${MYSQL_USER:-wain_user}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-wain_db}
+      JWT_SECRET: ${JWT_SECRET}
+      RECAPTCHA_SECRET: ${RECAPTCHA_SECRET}
+      WA_SESSION_DIR: /app/wa-sessions
+      WA_LOG_LEVEL: ${WA_LOG_LEVEL:-info}
+    volumes:
+      - uploads_data:/app/uploads
+      - wa_sessions:/app/wa-sessions
+    networks:
+      - app_network
+    # Run prisma migrate deploy before starting the app
+    command: >
+      sh -c "npx prisma migrate deploy && node src/app.js"
+
+  # ─── Frontend (React/Vite built → Nginx) ──────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: setorwader_frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "${FRONTEND_PORT:-80}:80"
+    networks:
+      - app_network
+
+# ─── Volumes ──────────────────────────────────────────────────────────────────
+volumes:
+  mysql_data:
+  uploads_data:
+  wa_sessions:
+
+# ─── Networks ─────────────────────────────────────────────────────────────────
+networks:
+  app_network:
+    driver: bridge
