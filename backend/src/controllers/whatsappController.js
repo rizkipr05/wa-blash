@@ -82,7 +82,8 @@ exports.getDeviceStatus = async (req, res) => {
       id: device.id,
       status: runtime?.status || device.status,
       phoneNumber: runtime?.phoneNumber || device.phoneNumber,
-      qrCode: runtime?.qrCode || null
+      qrCode: runtime?.qrCode || null,
+      pairingCode: runtime?.pairingCode || null
     });
   } catch (error) {
     res.status(500).json({ message: 'Error fetching device status', error: error.message });
