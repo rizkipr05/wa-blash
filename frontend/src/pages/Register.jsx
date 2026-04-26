@@ -62,7 +62,7 @@ const Register = () => {
       <div className="glass-card">
         <div className="logo-wrapper">
           <div className="logo-box">
-            <img src={brandLogo} alt="TerimaWa Logo" style={{ width: '40px', height: '40px' }} />
+            <img src={brandLogo} alt="TerimaWa Logo" />
           </div>
         </div>
         <h1 className="title">Daftar Akun</h1>

@@ -47,7 +47,7 @@ const AdminLogin = () => {
       <div className="glass-card" style={{ borderTop: '4px solid #0984e3' }}>
         <div className="logo-wrapper">
           <div className="logo-box">
-            <img src={brandLogo} alt="Logo Admin" style={{ width: '40px', height: '40px' }} />
+            <img src={brandLogo} alt="Logo Admin" />
           </div>
         </div>
         <h1 className="title" style={{ color: '#0984e3' }}>Portal Administrator</h1>

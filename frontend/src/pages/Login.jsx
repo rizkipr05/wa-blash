@@ -47,7 +47,7 @@ const Login = () => {
       <div className="glass-card">
         <div className="logo-wrapper">
           <div className="logo-box">
-            <img src={brandLogo} alt="setorwa-der.com Logo" style={{ width: '40px', height: '40px' }} />
+            <img src={brandLogo} alt="setorwa-der.com Logo" />
           </div>
         </div>
         <h1 className="title">Selamat Datang</h1>

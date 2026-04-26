@@ -26,7 +26,7 @@ const AdminLayout = () => {
     <div className="admin-layout-container">
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
-          <div className="header-logo" style={{ background: '#0984e3' }}>
+          <div className="header-logo">
             <img src={brandLogo} alt="Logo Admin" />
           </div>
           <div>
