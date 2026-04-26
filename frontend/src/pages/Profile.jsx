@@ -18,6 +18,7 @@ import {
   Zap,
   Calendar
 } from 'lucide-react';
+import brandLogo from '../assets/1.jpg';
 
 const Profile = () => {
   const navigate = useNavigate();
@@ -93,7 +94,7 @@ const Profile = () => {
         <header className="dashboard-header">
           <div className="header-left">
             <div className="header-logo">
-              <img src="/logo.png" alt="Logo" />
+              <img src={brandLogo} alt="Logo" />
             </div>
             <div>
               <h1 className="header-title">setorwa-der.com</h1>

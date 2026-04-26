@@ -1,6 +1,7 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Users, ShieldAlert, User, Home, MessageSquare, CreditCard, Settings } from 'lucide-react';
+import { LogOut, Users, User, Home, MessageSquare, CreditCard, Settings } from 'lucide-react';
+import brandLogo from '../assets/1.jpg';
 
 const AdminLayout = () => {
   const location = useLocation();
@@ -26,7 +27,7 @@ const AdminLayout = () => {
       <aside className="admin-sidebar">
         <div className="admin-sidebar-header">
           <div className="header-logo" style={{ background: '#0984e3' }}>
-            <ShieldAlert size={20} color="white" />
+            <img src={brandLogo} alt="Logo Admin" />
           </div>
           <div>
             <h1 style={{ fontSize: '1.2rem', fontWeight: 800, color: 'var(--text-main)' }}>WainAdmin</h1>

@@ -4,6 +4,7 @@ import { User, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, CheckCircle2, XCircle
 import api from '../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
 import PopupModal from '../components/PopupModal';
+import brandLogo from '../assets/1.jpg';
 
 const Register = () => {
   const [username, setUsername] = useState('');
@@ -61,7 +62,7 @@ const Register = () => {
       <div className="glass-card">
         <div className="logo-wrapper">
           <div className="logo-box">
-            <img src="/logo.png" alt="TerimaWa Logo" style={{ width: '40px', height: '40px' }} />
+            <img src={brandLogo} alt="TerimaWa Logo" style={{ width: '40px', height: '40px' }} />
           </div>
         </div>
         <h1 className="title">Daftar Akun</h1>

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
+import { User, Lock, ArrowRight } from 'lucide-react';
 import api from '../../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
 import PopupModal from '../../components/PopupModal';
+import brandLogo from '../../assets/1.jpg';
 
 const AdminLogin = () => {
   const [username, setUsername] = useState('');
@@ -46,7 +47,7 @@ const AdminLogin = () => {
       <div className="glass-card" style={{ borderTop: '4px solid #0984e3' }}>
         <div className="logo-wrapper">
           <div className="logo-box" style={{ background: '#0984e3' }}>
-            <ShieldAlert size={28} color="white" />
+            <img src={brandLogo} alt="Logo Admin" style={{ width: '40px', height: '40px' }} />
           </div>
         </div>
         <h1 className="title" style={{ color: '#0984e3' }}>Portal Administrator</h1>

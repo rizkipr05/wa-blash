@@ -4,6 +4,7 @@ import { User, Lock, ArrowRight } from 'lucide-react';
 import api from '../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
 import PopupModal from '../components/PopupModal';
+import brandLogo from '../assets/1.jpg';
 
 const Login = () => {
   const [username, setUsername] = useState('');
@@ -46,7 +47,7 @@ const Login = () => {
       <div className="glass-card">
         <div className="logo-wrapper">
           <div className="logo-box">
-            <img src="/logo.png" alt="setorwa-der.com Logo" style={{ width: '40px', height: '40px' }} />
+            <img src={brandLogo} alt="setorwa-der.com Logo" style={{ width: '40px', height: '40px' }} />
           </div>
         </div>
         <h1 className="title">Selamat Datang</h1>

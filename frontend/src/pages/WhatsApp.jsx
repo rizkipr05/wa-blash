@@ -28,6 +28,7 @@ import {
   Send
 } from 'lucide-react';
 import PopupModal from '../components/PopupModal';
+import brandLogo from '../assets/1.jpg';
 
 const POLL_INTERVAL = 2500;
 
@@ -255,7 +256,7 @@ const WhatsApp = () => {
         <header className="dashboard-header">
           <div className="header-left">
             <div className="header-logo">
-              <img src="/logo.png" alt="Logo" />
+              <img src={brandLogo} alt="Logo" />
             </div>
             <div>
               <h1 className="header-title">setorwa-der.com</h1>
@@ -449,7 +450,7 @@ const WhatsApp = () => {
               ) : connectionInfo.pairingCode ? (
                 <div style={{ margin: '1.5rem 0' }}>
                   <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>Masukkan kode di bawah ini pada WhatsApp di ponsel Anda:</p>
-                  <div style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '4px', background: '#f1f2f6', padding: '1rem', borderRadius: '8px', color: 'var(--text-main)' }}>
+                  <div style={{ fontSize: '2rem', fontWeight: 800, letterSpacing: '4px', background: '#f1f2f6', padding: '1rem', borderRadius: '8px', color: '#111827', textShadow: '0 0 0 transparent' }}>
                     {connectionInfo.pairingCode}
                   </div>
                 </div>
