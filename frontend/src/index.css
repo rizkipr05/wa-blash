@@ -539,6 +539,108 @@ input:focus, select:focus {
    MOBILE RESPONSIVENESS FIXES
 ========================================= */
 @media (max-width: 768px) {
+  /* Auth Login: make the form more compact on mobile */
+  .auth-layout {
+    padding: 1rem 0.75rem;
+  }
+  .login-page .glass-card,
+  .register-page .glass-card,
+  .admin-login-page .glass-card {
+    max-width: 360px;
+    padding: 1.25rem;
+    border-radius: 18px;
+  }
+  .login-page .logo-wrapper,
+  .register-page .logo-wrapper,
+  .admin-login-page .logo-wrapper {
+    margin-bottom: 1rem;
+  }
+  .login-page .logo-box,
+  .register-page .logo-box,
+  .admin-login-page .logo-box {
+    width: 54px;
+    height: 54px;
+  }
+  .login-page .logo-box img,
+  .register-page .logo-box img,
+  .admin-login-page .logo-box img {
+    width: 34px;
+    height: 34px;
+  }
+  .login-page .title,
+  .register-page .title,
+  .admin-login-page .title {
+    font-size: 1.7rem;
+    margin-bottom: 0.4rem;
+  }
+  .login-page .subtitle,
+  .register-page .subtitle,
+  .admin-login-page .subtitle {
+    font-size: 0.88rem;
+    margin-bottom: 1.2rem;
+  }
+  .login-page .form-group,
+  .register-page .form-group,
+  .admin-login-page .form-group {
+    margin-bottom: 0.9rem;
+  }
+  .login-page .form-label,
+  .register-page .form-label,
+  .admin-login-page .form-label {
+    font-size: 0.82rem;
+    margin-bottom: 0.4rem;
+  }
+  .login-page input,
+  .register-page input,
+  .admin-login-page input {
+    padding: 0.75rem 0.85rem;
+    font-size: 0.9rem;
+  }
+  .login-page .input-container input,
+  .register-page .input-container input,
+  .admin-login-page .input-container input {
+    padding-left: 2.6rem;
+  }
+  .login-page .input-icon,
+  .register-page .input-icon,
+  .admin-login-page .input-icon {
+    left: 0.8rem;
+    width: 18px;
+    height: 18px;
+  }
+  .login-page .recaptcha-wrap,
+  .register-page .recaptcha-wrap,
+  .admin-login-page .recaptcha-wrap {
+    margin: 1rem 0 !important;
+    transform: scale(0.92);
+    transform-origin: center;
+  }
+  .login-page .captcha-note,
+  .register-page .captcha-note {
+    margin-bottom: 1rem !important;
+  }
+  .login-page .btn,
+  .register-page .btn,
+  .admin-login-page .btn {
+    padding: 0.78rem;
+    font-size: 0.94rem;
+  }
+  .login-page .divider,
+  .register-page .divider,
+  .admin-login-page .divider {
+    margin: 1rem 0;
+    font-size: 0.82rem;
+  }
+  .register-page .register-password-hints {
+    grid-template-columns: 1fr !important;
+    font-size: 0.7rem !important;
+    padding: 0.65rem !important;
+    gap: 0.4rem !important;
+  }
+  .register-page .register-match-note {
+    font-size: 0.7rem !important;
+  }
+
   /* Dashboard General */
   .dashboard-main { padding: 1rem; padding-top: 4.5rem; padding-bottom: 6rem; }
   .dashboard-header { padding: 0.75rem 1rem; }

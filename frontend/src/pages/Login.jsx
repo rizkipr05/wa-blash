@@ -42,7 +42,7 @@ const Login = () => {
   const isFormValid = username.length > 0 && password.length > 0;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="login-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div className="glass-card">
         <div className="logo-wrapper">
           <div className="logo-box">
@@ -81,14 +81,14 @@ const Login = () => {
             </div>
           </div>
 
-          <div style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
+          <div className="recaptcha-wrap" style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
             <ReCAPTCHA
               sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
               onChange={(token) => setRecaptchaToken(token)}
             />
           </div>
 
-          <p style={{ fontSize: '11px', color: '#718096', marginBottom: '1.5rem', textAlign: 'center' }}>
+          <p className="captcha-note" style={{ fontSize: '11px', color: '#718096', marginBottom: '1.5rem', textAlign: 'center' }}>
             Harap verifikasi bahwa Anda bukan robot
           </p>
 

@@ -42,7 +42,7 @@ const AdminLogin = () => {
   const isFormValid = username.length > 0 && password.length > 0;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="admin-login-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div className="glass-card" style={{ borderTop: '4px solid #0984e3' }}>
         <div className="logo-wrapper">
           <div className="logo-box" style={{ background: '#0984e3' }}>
@@ -81,7 +81,7 @@ const AdminLogin = () => {
             </div>
           </div>
 
-          <div style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
+          <div className="recaptcha-wrap" style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
             <ReCAPTCHA
               sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI" 
               onChange={(token) => setRecaptchaToken(token)}

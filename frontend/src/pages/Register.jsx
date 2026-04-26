@@ -57,7 +57,7 @@ const Register = () => {
   const isFormValid = username.length >= 3 && password.length >= 8 && password === confirmPassword;
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="register-page" style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
       <div className="glass-card">
         <div className="logo-wrapper">
           <div className="logo-box">
@@ -103,7 +103,7 @@ const Register = () => {
               </button>
             </div>
             {password && (
-              <div style={{ marginTop: '0.75rem', background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.75rem' }}>
+              <div className="register-password-hints" style={{ marginTop: '0.75rem', background: 'rgba(0,0,0,0.2)', padding: '0.75rem', borderRadius: '8px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', fontSize: '0.75rem' }}>
                 <div style={{ color: password.length >= 8 ? '#10b981' : '#94a3b8', display: 'flex', alignItems: 'center', gap: '6px' }}>
                   {password.length >= 8 ? <CheckCircle2 size={14}/> : <XCircle size={14}/>} Min 8 Karakter
                 </div>
@@ -141,21 +141,21 @@ const Register = () => {
               </button>
             </div>
             {confirmPassword && (
-               <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: password === confirmPassword ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}>
+               <div className="register-match-note" style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: password === confirmPassword ? '#10b981' : '#ef4444', display: 'flex', alignItems: 'center', gap: '6px' }}>
                  {password === confirmPassword ? <CheckCircle2 size={14}/> : <XCircle size={14}/>} 
                  {password === confirmPassword ? 'Kata sandi cocok' : 'Kata sandi tidak sesuai'}
                </div>
             )}
           </div>
 
-          <div style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
+          <div className="recaptcha-wrap" style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>
             <ReCAPTCHA
               sitekey="6LeIxAcTAAAAAJcZVRqyHh71UMIEGNQ_MXjiZKhI"
               onChange={(token) => setRecaptchaToken(token)}
             />
           </div>
           
-          <p style={{ fontSize: '11px', color: '#718096', marginBottom: '1.5rem', textAlign: 'center' }}>
+          <p className="captcha-note" style={{ fontSize: '11px', color: '#718096', marginBottom: '1.5rem', textAlign: 'center' }}>
               Harap verifikasi bahwa Anda bukan robot
           </p>
 
