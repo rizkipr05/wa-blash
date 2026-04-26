@@ -93,7 +93,7 @@ const Profile = () => {
         <header className="dashboard-header">
           <div className="header-left">
             <div className="header-logo">
-              <img src="/src/assets/logo.png" alt="Logo" />
+              <img src="/logo.png" alt="Logo" />
             </div>
             <div>
               <h1 className="header-title">setorwa-der.com</h1>
