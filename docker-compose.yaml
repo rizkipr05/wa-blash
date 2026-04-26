@@ -3,7 +3,6 @@ services:
   # ─── MySQL Database ────────────────────────────────────────────────────────
   mysql:
     image: mysql:8.0
-    container_name: setorwader_mysql
     restart: unless-stopped
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
@@ -12,8 +11,6 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}
     volumes:
       - mysql_data:/var/lib/mysql
-    networks:
-      - app_network
     healthcheck:
       test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
       interval: 10s
@@ -26,7 +23,6 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
-    container_name: setorwader_backend
     restart: unless-stopped
     depends_on:
       mysql:
@@ -50,8 +46,6 @@ services:
     volumes:
       - uploads_data:/app/uploads
       - wa_sessions:/app/wa-sessions
-    networks:
-      - app_network
     # Run prisma db push before starting the app to sync schema directly
     command: >
       sh -c "npx prisma db push && node src/app.js"
@@ -63,28 +57,20 @@ services:
       dockerfile: Dockerfile
       args:
         - VITE_API_URL=${VITE_API_URL}
-    container_name: setorwader_frontend
     restart: unless-stopped
     depends_on:
       - backend
     expose:
       - "80"
     healthcheck:
-      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost/ || exit 1"]
+      test: ["CMD-SHELL", "wget -q -O /dev/null http://127.0.0.1/ || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 10s
-    networks:
-      - app_network
 
 # ─── Volumes ──────────────────────────────────────────────────────────────────
 volumes:
   mysql_data:
   uploads_data:
   wa_sessions:
-
-# ─── Networks ─────────────────────────────────────────────────────────────────
-networks:
-  app_network:
-    driver: bridge
