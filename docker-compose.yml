@@ -53,6 +53,8 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL}
     container_name: setorwader_frontend
     restart: unless-stopped
     depends_on:
