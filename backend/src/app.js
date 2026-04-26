@@ -24,6 +24,9 @@ app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/admin', adminRoutes);
 
+// Backward-compatible aliases for clients still calling endpoints without /api prefix.
+app.use('/auth', authRoutes);
+
 app.get('/', (req, res) => {
   res.send('Wain Backend is running!');
 });
