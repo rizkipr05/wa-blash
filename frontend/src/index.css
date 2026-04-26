@@ -75,8 +75,8 @@ body {
 }
 
 .logo-box {
-  width: 84px;
-  height: 84px;
+  width: 120px;
+  height: 120px;
   background: transparent;
   border-radius: var(--radius-md);
   display: flex;
@@ -86,8 +86,8 @@ body {
 }
 
 .logo-box img {
-  width: 56px;
-  height: 56px;
+  width: 90px;
+  height: 90px;
   object-fit: cover;
   border-radius: 8px;
 }
@@ -267,8 +267,8 @@ input:focus, select:focus {
 }
 
 .header-logo {
-  width: 46px;
-  height: 46px;
+  width: 64px;
+  height: 64px;
   background: white;
   border-radius: 10px;
   display: flex;
@@ -279,8 +279,8 @@ input:focus, select:focus {
 }
 
 .header-logo img {
-  width: 32px;
-  height: 32px;
+  width: 48px;
+  height: 48px;
   object-fit: cover;
   border-radius: 6px;
 }
@@ -562,16 +562,16 @@ input:focus, select:focus {
   .login-page .logo-box,
   .register-page .logo-box,
   .admin-login-page .logo-box {
-    width: 64px;
-    height: 64px;
+    width: 90px;
+    height: 90px;
     background: transparent !important;
     box-shadow: none !important;
   }
   .login-page .logo-box img,
   .register-page .logo-box img,
   .admin-login-page .logo-box img {
-    width: 46px;
-    height: 46px;
+    width: 70px;
+    height: 70px;
   }
   .login-page .title,
   .register-page .title,
@@ -650,8 +650,8 @@ input:focus, select:focus {
   /* Dashboard General */
   .dashboard-main { padding: 1rem; padding-top: 4.5rem; padding-bottom: 6rem; }
   .dashboard-header { padding: 0.75rem 1rem; }
-  .header-logo { width: 40px; height: 40px; }
-  .header-logo img { width: 26px; height: 26px; }
+  .header-logo { width: 56px; height: 56px; }
+  .header-logo img { width: 40px; height: 40px; }
   .header-left { gap: 0.5rem; }
   .logout-btn { padding: 0.5rem 1rem; font-size: 0.75rem; }
 
