@@ -27,7 +27,8 @@ const AdminLogin = () => {
       return;
     }
     try {
-      const response = await axios.post('http://localhost:3000/api/auth/admin-login', {
+      const baseURL = import.meta.env.VITE_API_URL || '/api';
+      const response = await axios.post(`${baseURL}/auth/admin-login`, {
         username,
         password,
         recaptchaToken

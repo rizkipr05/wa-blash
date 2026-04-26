@@ -43,7 +43,8 @@ const Register = () => {
       return;
     }
     try {
-      await axios.post('http://localhost:3000/api/auth/register', { 
+      const baseURL = import.meta.env.VITE_API_URL || '/api';
+      await axios.post(`${baseURL}/auth/register`, {
         username, 
         password,
         recaptchaToken 
