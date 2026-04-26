@@ -1,24 +1,21 @@
 services:
-
-  # ─── MySQL Database ────────────────────────────────────────────────────────
   mysql:
     image: mysql:8.0
     restart: unless-stopped
     environment:
-      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
-      MYSQL_DATABASE: ${MYSQL_DATABASE:-wain_db}
-      MYSQL_USER: ${MYSQL_USER:-wain_user}
-      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD:?MYSQL_ROOT_PASSWORD is required}"
+      MYSQL_DATABASE: "${MYSQL_DATABASE:-wain_db}"
+      MYSQL_USER: "${MYSQL_USER:-wain_user}"
+      MYSQL_PASSWORD: "${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}"
     volumes:
       - mysql_data:/var/lib/mysql
     healthcheck:
-      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "root", "-p${MYSQL_ROOT_PASSWORD}"]
+      test: ["CMD-SHELL", "mysqladmin ping -h 127.0.0.1 -uroot -p$${MYSQL_ROOT_PASSWORD} --silent"]
       interval: 10s
       timeout: 5s
       retries: 10
       start_period: 30s
 
-  # ─── Backend (Node.js + Express + Prisma) ─────────────────────────────────
   backend:
     build:
       context: ./backend
@@ -30,36 +27,35 @@ services:
     expose:
       - "3000"
     healthcheck:
-      test: ["CMD-SHELL", "node -e \"require('http').get('http://localhost:3000/', (res) => { if (res.statusCode !== 200) process.exit(1); process.exit(0); }).on('error', () => process.exit(1));\""]
+      test: ["CMD-SHELL", "node -e \"require('http').get('http://127.0.0.1:3000/', (res) => { process.exit(res.statusCode === 200 ? 0 : 1); }).on('error', () => process.exit(1));\""]
       interval: 30s
       timeout: 10s
       retries: 5
       start_period: 40s
     environment:
       NODE_ENV: production
-      PORT: 3000
-      DATABASE_URL: mysql://${MYSQL_USER:-wain_user}:${MYSQL_PASSWORD}@mysql:3306/${MYSQL_DATABASE:-wain_db}
-      JWT_SECRET: ${JWT_SECRET}
-      RECAPTCHA_SECRET: ${RECAPTCHA_SECRET}
+      PORT: "3000"
+      DATABASE_URL: "mysql://${MYSQL_USER:-wain_user}:${MYSQL_PASSWORD:?MYSQL_PASSWORD is required}@mysql:3306/${MYSQL_DATABASE:-wain_db}"
+      JWT_SECRET: "${JWT_SECRET:?JWT_SECRET is required}"
+      RECAPTCHA_SECRET: "${RECAPTCHA_SECRET:-6LeIxAcTAAAAAGG-vFI1TnRWxMZNFuojJ4WifJWe}"
       WA_SESSION_DIR: /app/wa-sessions
-      WA_LOG_LEVEL: ${WA_LOG_LEVEL:-info}
+      WA_LOG_LEVEL: "${WA_LOG_LEVEL:-info}"
     volumes:
       - uploads_data:/app/uploads
       - wa_sessions:/app/wa-sessions
-    # Run prisma db push before starting the app to sync schema directly
     command: >
       sh -c "npx prisma db push && node src/app.js"
 
-  # ─── Frontend (React/Vite built → Nginx) ──────────────────────────────────
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        - VITE_API_URL=${VITE_API_URL}
+        VITE_API_URL: "${VITE_API_URL:-/api}"
     restart: unless-stopped
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     expose:
       - "80"
     healthcheck:
@@ -69,7 +65,6 @@ services:
       retries: 5
       start_period: 10s
 
-# ─── Volumes ──────────────────────────────────────────────────────────────────
 volumes:
   mysql_data:
   uploads_data:
