@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, ArrowRight, ShieldAlert } from 'lucide-react';
-import axios from 'axios';
+import api from '../../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
 import PopupModal from '../../components/PopupModal';
 
@@ -27,8 +27,7 @@ const AdminLogin = () => {
       return;
     }
     try {
-      const baseURL = import.meta.env.VITE_API_URL || '/api';
-      const response = await axios.post(`${baseURL}/auth/admin-login`, {
+      const response = await api.post('/auth/admin-login', {
         username,
         password,
         recaptchaToken

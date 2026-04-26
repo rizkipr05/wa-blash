@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
-import axios from 'axios';
+import api from '../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
 import PopupModal from '../components/PopupModal';
 
@@ -43,8 +43,7 @@ const Register = () => {
       return;
     }
     try {
-      const baseURL = import.meta.env.VITE_API_URL || '/api';
-      await axios.post(`${baseURL}/auth/register`, {
+      await api.post('/auth/register', {
         username, 
         password,
         recaptchaToken 

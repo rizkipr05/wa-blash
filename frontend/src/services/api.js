@@ -1,7 +1,13 @@
 import axios from 'axios';
 
+const resolveApiBaseUrl = () => {
+  const envBase = (import.meta.env.VITE_API_URL || '').trim();
+  if (!envBase) return '/api';
+  return envBase.endsWith('/api') ? envBase : `${envBase}/api`;
+};
+
 const api = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || '/api',
+  baseURL: resolveApiBaseUrl(),
 });
 
 // Add a request interceptor to include the auth token
