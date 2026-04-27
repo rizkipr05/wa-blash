@@ -95,7 +95,7 @@ const connectDevice = async (device, options = {}) => {
     auth: state,
     printQRInTerminal: false,
     logger: LOGGER,
-    browser: Browsers.macOS('Desktop'),
+    browser: ["Ubuntu", "Chrome", "20.0.04"],
     syncFullHistory: false
   });
 
@@ -112,8 +112,10 @@ const connectDevice = async (device, options = {}) => {
   if (options.method === 'pairing' && options.phoneNumber && !state.creds.me) {
     const cleanNumber = normalizePairingPhoneNumber(options.phoneNumber);
     
-    sock.waitForConnectionUpdate((update) => !!update.qr).then(async () => {
+    // Give the socket a second to initialize before requesting the code
+    setTimeout(async () => {
       try {
+        LOGGER.info({ deviceId: device.id, cleanNumber }, 'Requesting WhatsApp pairing code...');
         const code = await sock.requestPairingCode(cleanNumber);
         upsertSessionState(device.id, { pairingCode: code, status: 'PAIRING_READY', qrCode: null });
         LOGGER.info({ deviceId: device.id, code }, 'Pairing code generated successfully');
@@ -121,7 +123,7 @@ const connectDevice = async (device, options = {}) => {
         LOGGER.error({ deviceId: device.id, err: err.message }, 'Failed to generate pairing code');
         upsertSessionState(device.id, { status: 'DISCONNECTED', pairingCode: null });
       }
-    }).catch(() => {});
+    }, 3000);
   }
 
   await updateDeviceRecord(device.id, {
