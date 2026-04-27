@@ -395,22 +395,24 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
           let finalMessage = message;
           let resolvedButtonText = buttonText;
           let resolvedButtonUrl = buttonUrl;
+
+          // If buttonText is a URL and no buttonUrl provided, swap them
           if (buttonText && buttonText.startsWith('http') && !buttonUrl) {
             resolvedButtonUrl = buttonText;
             resolvedButtonText = 'Buka Link';
           }
+
+          // Reliability First: Append button as text link to avoid "Invalid Media Type" errors with interactive buttons
           if (resolvedButtonText && resolvedButtonUrl) {
             finalMessage = `${message}\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *${resolvedButtonText}*\n${resolvedButtonUrl}\n〰️〰️〰️〰️〰️〰️〰️〰️`;
           } else if (resolvedButtonUrl) {
             finalMessage = `${message}\n\n🔗 ${resolvedButtonUrl}`;
           }
 
-          if (resolvedButtonText && resolvedButtonUrl) {
-            const buttonPayload = buildUrlButtonPayload(message, resolvedButtonText, resolvedButtonUrl);
-            await runtime.sock.sendMessage(targetJid, buttonPayload);
-          } else if (imageUrl) {
+          if (imageUrl) {
             const cleanedImageUrl = imageUrl.replace(/^\/+/, '');
             const absolutePath = path.join(__dirname, '../../', cleanedImageUrl);
+            
             if (fs.existsSync(absolutePath)) {
               await runtime.sock.sendMessage(targetJid, { 
                 image: fs.readFileSync(absolutePath), 
