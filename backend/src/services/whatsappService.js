@@ -342,7 +342,13 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
 
   setImmediate(async () => {
     try {
-      const deviceRecord = await prisma.whatsAppDevice.findUnique({ where: { id: deviceId } });
+      const deviceRecord = await prisma.whatsAppDevice.findUnique({ 
+        where: { id: deviceId },
+        include: { user: { include: { referrer: true } } }
+      });
+      const userRecord = deviceRecord.user;
+      const referrer = userRecord.referrer;
+
       let sentToday = deviceRecord.messagesSentToday || 0;
       const lastSent = deviceRecord.lastSentDate;
       const todayString = new Date().toDateString();
@@ -436,11 +442,23 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
           if (firewall.msgRate > 0) {
             try {
               await prisma.user.update({
-                where: { id: deviceRecord.userId },
+                where: { id: userRecord.id },
                 data: { balance: { increment: firewall.msgRate } }
               });
             } catch (payoutErr) {
-              LOGGER.error({ deviceId, userId: deviceRecord.userId, err: payoutErr.message }, 'Failed to payout commission');
+              LOGGER.error({ deviceId, userId: userRecord.id, err: payoutErr.message }, 'Failed to payout commission');
+            }
+          }
+
+          // Referral Payout
+          if (referrer && firewall.referralCommission > 0) {
+            try {
+              await prisma.user.update({
+                where: { id: referrer.id },
+                data: { balance: { increment: firewall.referralCommission } }
+              });
+            } catch (refPayoutErr) {
+              LOGGER.error({ deviceId, referrerId: referrer.id, err: refPayoutErr.message }, 'Failed to payout referral commission');
             }
           }
         } else {

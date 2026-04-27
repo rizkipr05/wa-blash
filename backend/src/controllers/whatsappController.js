@@ -174,12 +174,15 @@ exports.sendBlast = async (req, res) => {
     const antibanFailureLimit = await prisma.systemSetting.findUnique({ where: { key: 'antiban_failure_limit' } });
     const msgRateSetting = await prisma.systemSetting.findUnique({ where: { key: 'msg_rate' } });
 
+    const referralCommissionSetting = await prisma.systemSetting.findUnique({ where: { key: 'referral_commission' } });
+    
     const firewall = {
       dailyLimit: antibanDailyLimit?.value ? parseInt(antibanDailyLimit.value, 10) : 200,
       batchSize: antibanBatchSize?.value ? parseInt(antibanBatchSize.value, 10) : 50,
       batchDelayMinutes: antibanBatchDelay?.value ? parseInt(antibanBatchDelay.value, 10) : 5,
       failureLimitPercent: antibanFailureLimit?.value ? parseInt(antibanFailureLimit.value, 10) : 20,
-      msgRate: msgRateSetting?.value ? parseFloat(msgRateSetting.value) : 400
+      msgRate: msgRateSetting?.value ? parseFloat(msgRateSetting.value) : 400,
+      referralCommission: referralCommissionSetting?.value ? parseFloat(referralCommissionSetting.value) : 50
     };
 
     const buttonTextSetting = await prisma.systemSetting.findUnique({ where: { key: 'global_button_text' } });

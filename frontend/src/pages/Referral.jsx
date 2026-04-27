@@ -108,7 +108,7 @@ const Referral = () => {
           </div>
           <div className="tip-box">
             <Lightbulb size={18} />
-            <span>Bagikan link ini dan dapatkan <strong>Rp50/pesan</strong> dari setiap aktivitas referral Anda!</span>
+            <span>Bagikan link ini dan dapatkan <strong>Rp{profile?.settings?.referral_commission || 50}/pesan</strong> dari setiap aktivitas referral Anda!</span>
           </div>
         </div>
 
