@@ -25,6 +25,7 @@ const AdminDashboard = () => {
     { label: 'Active WA', value: stats.activeDevices, icon: <CheckCircle size={24} />, color: '#00b894', bg: '#e6fff9' },
     { label: 'Total WA', value: stats.totalDevices, icon: <Smartphone size={24} />, color: '#6c5ce7', bg: '#f3e8ff' },
     { label: 'Pending WD', value: stats.pendingWithdrawals, icon: <Wallet size={24} />, color: '#ff7675', bg: '#fff5f5' },
+    { label: 'Log Aktivitas', value: 'Live', icon: <Smartphone size={24} />, color: '#0984e3', bg: '#ebf5ff', path: '/logs' },
   ];
 
   return (
@@ -36,7 +37,12 @@ const AdminDashboard = () => {
 
       <div className="stats-grid" style={{ marginBottom: '2rem' }}>
         {summaryCards.map((stat, index) => (
-          <div key={index} className="stat-card" style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.05)' }}>
+          <div 
+            key={index} 
+            className="stat-card" 
+            onClick={() => stat.path && (window.location.href = stat.path)}
+            style={{ boxShadow: '0 4px 6px rgba(0,0,0,0.05)', cursor: stat.path ? 'pointer' : 'default' }}
+          >
             <div className="stat-icon" style={{ backgroundColor: stat.bg, color: stat.color }}>
               {stat.icon}
             </div>

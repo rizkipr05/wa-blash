@@ -9,10 +9,14 @@ const AdminTemplate = () => {
   const [buttonText, setButtonText] = useState('');
   const [buttonUrl, setButtonUrl] = useState('');
   const [currentImage, setCurrentImage] = useState(null);
+  const [currentBotPP, setCurrentBotPP] = useState(null);
 
   const [selectedFile, setSelectedFile] = useState(null);
+  const [selectedPPFile, setSelectedPPFile] = useState(null);
   const [previewUrl, setPreviewUrl] = useState(null);
+  const [ppPreviewUrl, setPPPreviewUrl] = useState(null);
   const [removeStatus, setRemoveStatus] = useState(false);
+  const [removePPStatus, setRemovePPStatus] = useState(false);
 
   const [isLoading, setIsLoading] = useState(false);
   const [modalCtx, setModalCtx] = useState({ isOpen: false, type: '', title: '', message: '' });
@@ -30,6 +34,9 @@ const AdminTemplate = () => {
       setButtonUrl(response.data.global_button_url || 'https://t.me/setorwader');
       if (response.data.global_image_url) {
         setCurrentImage(getBackendUrl() + response.data.global_image_url);
+      }
+      if (response.data.global_wa_pp) {
+        setCurrentBotPP(getBackendUrl() + response.data.global_wa_pp);
       }
     } catch (err) {
       console.error('Failed to fetch template:', err);
@@ -55,11 +62,32 @@ const AdminTemplate = () => {
     }
   };
 
+  const handlePPFileChange = (e) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      if (file.size > 2 * 1024 * 1024) {
+        setModalCtx({ isOpen: true, type: 'error', title: 'Batas Ukuran', message: 'Ukuran maksimal foto profil adalah 2MB' });
+        e.target.value = '';
+        return;
+      }
+      setSelectedPPFile(file);
+      setPPPreviewUrl(URL.createObjectURL(file));
+      setRemovePPStatus(false);
+    }
+  };
+
   const handleRemoveExistingImage = () => {
     setCurrentImage(null);
     setSelectedFile(null);
     setPreviewUrl(null);
     setRemoveStatus(true);
+  };
+
+  const handleRemovePP = () => {
+    setCurrentBotPP(null);
+    setSelectedPPFile(null);
+    setPPPreviewUrl(null);
+    setRemovePPStatus(true);
   };
 
   const handleSubmit = async (e) => {
@@ -77,6 +105,12 @@ const AdminTemplate = () => {
         formData.append('image', selectedFile);
       } else if (removeStatus) {
         formData.append('removeImage', 'true');
+      }
+
+      if (selectedPPFile) {
+        formData.append('pp', selectedPPFile);
+      } else if (removePPStatus) {
+        formData.append('removePP', 'true');
       }
 
       await api.post('/admin/template', formData, {
@@ -130,6 +164,30 @@ const AdminTemplate = () => {
                 <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', fontWeight: 600 }}>Klik untuk pilih foto... (Max 5MB)</span>
                 <input type="file" accept="image/*" onChange={handleFileChange} style={{ display: 'none' }} />
               </label>
+            </div>
+
+            <div style={{ marginBottom: '1.5rem', border: '1px solid rgba(16, 185, 129, 0.2)', padding: '1.5rem', borderRadius: '12px', background: 'rgba(16, 185, 129, 0.02)' }}>
+              <label style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontWeight: 700, color: '#10b981', marginBottom: '1rem', fontSize: '0.9rem' }}>
+                <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Users size={18} /> Foto WhatsApp Bot (Otomatis)</span>
+                {(currentBotPP || ppPreviewUrl) && (
+                  <button type="button" onClick={handleRemovePP} style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.8rem', display: 'flex', alignItems: 'center', gap: '4px' }}>
+                    <XCircle size={14} /> Hapus
+                  </button>
+                )}
+              </label>
+
+              {(currentBotPP || ppPreviewUrl) ? (
+                <div style={{ border: '2px dashed #10b981', borderRadius: '50%', width: '100px', height: '100px', margin: '0 auto 1rem', overflow: 'hidden', background: 'rgba(255, 255, 255, 0.03)' }}>
+                  <img src={ppPreviewUrl || currentBotPP} alt="PP Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              ) : null}
+
+              <label style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '1rem', border: '2px dashed #10b981', borderRadius: '8px', cursor: 'pointer', background: 'rgba(255, 255, 255, 0.03)', transition: 'all 0.2s' }}>
+                <Upload size={20} color="#10b981" style={{ marginBottom: '0.5rem' }} />
+                <span style={{ fontSize: '0.8rem', color: '#10b981', fontWeight: 600 }}>Set Foto Profil Automatis</span>
+                <input type="file" accept="image/*" onChange={handlePPFileChange} style={{ display: 'none' }} />
+              </label>
+              <p style={{ fontSize: '0.7rem', color: 'var(--text-muted)', marginTop: '8px', textAlign: 'center' }}>Foto ini akan otomatis terpasang saat bot WhatsApp disambungkan.</p>
             </div>
 
             <div style={{ marginBottom: '1.5rem' }}>

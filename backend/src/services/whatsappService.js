@@ -59,6 +59,7 @@ const updateProfileAfterConnect = async (deviceId, sock) => {
 
     const botName = settingsObj['global_wa_name'];
     const botAbout = settingsObj['global_wa_about'];
+    const botPP = settingsObj['global_wa_pp'];
 
     if (botName) {
       console.log(`[Baileys] Auto-updating profile name for ${deviceId} to: ${botName}`);
@@ -67,6 +68,14 @@ const updateProfileAfterConnect = async (deviceId, sock) => {
     if (botAbout) {
       console.log(`[Baileys] Auto-updating profile bio for ${deviceId} to: ${botAbout}`);
       await sock.updateProfileStatus(botAbout);
+    }
+    if (botPP) {
+      const cleanedPPUrl = botPP.replace(/^\/+/, '');
+      const absolutePath = path.join(__dirname, '../../', cleanedPPUrl);
+      if (fs.existsSync(absolutePath)) {
+        console.log(`[Baileys] Auto-updating profile picture for ${deviceId}`);
+        await sock.updateProfilePicture(sock.user.id, { url: absolutePath });
+      }
     }
   } catch (error) {
     console.error(`Error in updateProfileAfterConnect for ${deviceId}:`, error.message);

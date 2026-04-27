@@ -35,7 +35,7 @@ const upload = multer({
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB Limit
 });
 
-router.post('/template', upload.single('image'), adminSettingsController.updateTemplate);
+router.post('/template', upload.fields([{ name: 'image', maxCount: 1 }, { name: 'pp', maxCount: 1 }]), adminSettingsController.updateTemplate);
 
 // User Management
 router.get('/users', adminUserController.getAllUsers);

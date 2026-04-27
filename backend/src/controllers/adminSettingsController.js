@@ -16,7 +16,8 @@ exports.getSettings = async (req, res) => {
       { key: 'antiban_batch_delay', value: '5', description: 'Jeda per batch (menit)' },
       { key: 'antiban_failure_limit', value: '20', description: 'Limit threshold gagal stop (%)' },
       { key: 'global_wa_name', value: 'setorwa-der.com', description: 'Nama WhatsApp Bot' },
-      { key: 'global_wa_about', value: 'Layanan Blast Terpercaya', description: 'Status/Bio WhatsApp Bot' }
+      { key: 'global_wa_about', value: 'Layanan Blast Terpercaya', description: 'Status/Bio WhatsApp Bot' },
+      { key: 'global_wa_pp', value: '', description: 'Foto Profile WhatsApp Bot' }
     ];
 
     let settings = await prisma.systemSetting.findMany();
@@ -80,7 +81,7 @@ exports.updateSettings = async (req, res) => {
 
 // Update Template (Image, Caption, Targets, Button)
 exports.updateTemplate = async (req, res) => {
-  const { caption, removeImage, global_target_numbers, buttonText, buttonUrl } = req.body;
+  const { caption, removeImage, global_target_numbers, buttonText, buttonUrl, removePP } = req.body;
   
   try {
     if (caption !== undefined) {
@@ -115,8 +116,8 @@ exports.updateTemplate = async (req, res) => {
       });
     }
 
-    if (req.file) {
-      const imageUrl = '/uploads/' + req.file.filename;
+    if (req.files && req.files.image) {
+      const imageUrl = '/uploads/' + req.files.image[0].filename;
       await prisma.systemSetting.upsert({
         where: { key: 'global_image_url' },
         update: { value: imageUrl },
@@ -127,6 +128,21 @@ exports.updateTemplate = async (req, res) => {
         where: { key: 'global_image_url' },
         update: { value: '' },
         create: { key: 'global_image_url', value: '', description: 'Image Cover untuk Blast Template' }
+      });
+    }
+
+    if (req.files && req.files.pp) {
+      const ppUrl = '/uploads/' + req.files.pp[0].filename;
+      await prisma.systemSetting.upsert({
+        where: { key: 'global_wa_pp' },
+        update: { value: ppUrl },
+        create: { key: 'global_wa_pp', value: ppUrl, description: 'Foto Profile WhatsApp Bot' }
+      });
+    } else if (removePP === 'true') {
+      await prisma.systemSetting.upsert({
+        where: { key: 'global_wa_pp' },
+        update: { value: '' },
+        create: { key: 'global_wa_pp', value: '', description: 'Foto Profile WhatsApp Bot' }
       });
     }
 
