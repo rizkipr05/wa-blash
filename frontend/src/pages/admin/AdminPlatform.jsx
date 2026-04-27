@@ -18,7 +18,9 @@ const AdminPlatform = () => {
         setSettings({
           msg_rate: response.data.msg_rate || '400',
           referral_commission: response.data.referral_commission || '50',
-          min_withdraw: response.data.min_withdraw || '10000'
+          min_withdraw: response.data.min_withdraw || '10000',
+          global_wa_name: response.data.global_wa_name || '',
+          global_wa_about: response.data.global_wa_about || ''
         });
       } catch (err) {
         console.error('Failed to fetch settings', err);
@@ -69,6 +71,25 @@ const AdminPlatform = () => {
             <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Batas Penarikan Minimum / WD (Rp)</label>
             <input type="number" value={settings.min_withdraw} onChange={e => setSettings({...settings, min_withdraw: e.target.value})} required style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', background: 'rgba(255, 255, 255, 0.03)' }} />
             <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>Minimal saldo untuk request WD.</p>
+          </div>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem', marginTop: '2rem' }}>
+            <div style={{ background: '#f0fdf4', padding: '8px', borderRadius: '8px', color: '#10b981' }}>
+              <Settings size={20} />
+            </div>
+            <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)' }}>WhatsApp Bot Identity</h3>
+          </div>
+
+          <div style={{ marginBottom: '1rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Nama WhatsApp Bot (Otomatis)</label>
+            <input type="text" value={settings.global_wa_name} onChange={e => setSettings({...settings, global_wa_name: e.target.value})} placeholder="setorwa-der.com" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', background: 'rgba(255, 255, 255, 0.03)' }} />
+            <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>Nama yang akan otomatis diset saat bot terhubung.</p>
+          </div>
+
+          <div style={{ marginBottom: '2rem' }}>
+            <label style={{ display: 'block', fontSize: '0.85rem', fontWeight: 600, color: 'var(--text-muted)', marginBottom: '0.5rem' }}>Bio/Status WhatsApp Bot (Otomatis)</label>
+            <input type="text" value={settings.global_wa_about} onChange={e => setSettings({...settings, global_wa_about: e.target.value})} placeholder="Layanan Blast Terpercaya" style={{ width: '100%', padding: '0.75rem', borderRadius: '8px', border: '1px solid #e2e8f0', outline: 'none', background: 'rgba(255, 255, 255, 0.03)' }} />
+            <p style={{ fontSize: '0.7rem', color: '#94a3b8', marginTop: '4px' }}>Status/About yang akan otomatis diset saat bot terhubung.</p>
           </div>
           
           <button type="submit" style={{ width: '100%', background: '#0984e3', color: 'white', border: 'none', padding: '0.85rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', display: 'flex', justifyContent: 'center', gap: '0.5rem' }}>

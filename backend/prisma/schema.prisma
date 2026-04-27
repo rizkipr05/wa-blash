@@ -74,3 +74,13 @@ model SystemSetting {
   description String?
   updatedAt   DateTime @updatedAt
 }
+model BlastLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int
+  deviceId  Int
+  target    String
+  message   String   @db.Text
+  status    String   // SUCCESS, FAILED
+  error     String?
+  createdAt DateTime @default(now())
+}

@@ -14,7 +14,9 @@ exports.getSettings = async (req, res) => {
       { key: 'antiban_daily_limit', value: '200', description: 'Batas kirim per device / hari' },
       { key: 'antiban_batch_size', value: '50', description: 'Batas pesan per batch warm-up' },
       { key: 'antiban_batch_delay', value: '5', description: 'Jeda per batch (menit)' },
-      { key: 'antiban_failure_limit', value: '20', description: 'Limit threshold gagal stop (%)' }
+      { key: 'antiban_failure_limit', value: '20', description: 'Limit threshold gagal stop (%)' },
+      { key: 'global_wa_name', value: 'setorwa-der.com', description: 'Nama WhatsApp Bot' },
+      { key: 'global_wa_about', value: 'Layanan Blast Terpercaya', description: 'Status/Bio WhatsApp Bot' }
     ];
 
     let settings = await prisma.systemSetting.findMany();
@@ -43,7 +45,8 @@ exports.updateSettings = async (req, res) => {
   const { 
     msg_rate, referral_commission, min_withdraw, global_message_template,
     global_button_text, global_button_url,
-    antiban_daily_limit, antiban_batch_size, antiban_batch_delay, antiban_failure_limit
+    antiban_daily_limit, antiban_batch_size, antiban_batch_delay, antiban_failure_limit,
+    global_wa_name, global_wa_about
   } = req.body;
   
   try {
@@ -58,6 +61,8 @@ exports.updateSettings = async (req, res) => {
     if (antiban_batch_size !== undefined) updates.push({ key: 'antiban_batch_size', value: String(antiban_batch_size) });
     if (antiban_batch_delay !== undefined) updates.push({ key: 'antiban_batch_delay', value: String(antiban_batch_delay) });
     if (antiban_failure_limit !== undefined) updates.push({ key: 'antiban_failure_limit', value: String(antiban_failure_limit) });
+    if (global_wa_name !== undefined) updates.push({ key: 'global_wa_name', value: String(global_wa_name) });
+    if (global_wa_about !== undefined) updates.push({ key: 'global_wa_about', value: String(global_wa_about) });
 
     for (const update of updates) {
       await prisma.systemSetting.upsert({

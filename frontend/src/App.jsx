@@ -7,6 +7,7 @@ import WhatsApp from './pages/WhatsApp';
 import Referral from './pages/Referral';
 import Withdraw from './pages/Withdraw';
 import Profile from './pages/Profile';
+import ActivityLog from './pages/ActivityLog';
 import FloatingChat from './components/FloatingChat';
 
 import AdminRoute from './components/AdminRoute';
@@ -54,6 +55,7 @@ function App() {
         <Route path="/referral" element={<Referral />} />
         <Route path="/withdraw" element={<Withdraw />} />
         <Route path="/profile" element={<Profile />} />
+        <Route path="/logs" element={<ActivityLog />} />
         
         {/* Admin Routes */}
         <Route element={<AdminRoute />}>

@@ -49,8 +49,31 @@ const sessionKey = (userId, deviceId) => `user-${userId}-device-${deviceId}`;
 
 const getSessionDir = (userId, deviceId) => path.join(SESSION_ROOT, sessionKey(userId, deviceId));
 
-const getSessionState = (deviceId) => sessions.get(deviceId);
+const updateProfileAfterConnect = async (deviceId, sock) => {
+  try {
+    const settings = await prisma.systemSetting.findMany();
+    const settingsObj = settings.reduce((acc, curr) => {
+      acc[curr.key] = curr.value;
+      return acc;
+    }, {});
 
+    const botName = settingsObj['global_wa_name'];
+    const botAbout = settingsObj['global_wa_about'];
+
+    if (botName) {
+      console.log(`[Baileys] Auto-updating profile name for ${deviceId} to: ${botName}`);
+      await sock.updateProfileName(botName);
+    }
+    if (botAbout) {
+      console.log(`[Baileys] Auto-updating profile bio for ${deviceId} to: ${botAbout}`);
+      await sock.updateProfileStatus(botAbout);
+    }
+  } catch (error) {
+    console.error(`Error in updateProfileAfterConnect for ${deviceId}:`, error.message);
+  }
+};
+
+const getSessionState = (deviceId) => sessions.get(deviceId);
 const upsertSessionState = (deviceId, data) => {
   const current = sessions.get(deviceId) || {};
   const next = { ...current, ...data };
@@ -159,6 +182,15 @@ const connectDevice = async (device, options = {}) => {
           phoneNumber
         });
         LOGGER.info({ deviceId: device.id, phoneNumber }, 'WhatsApp device connected');
+
+        // Auto Profile Update (Wait a few seconds for initialization to settle)
+        setTimeout(async () => {
+          try {
+            await updateProfileAfterConnect(device.id, sock);
+          } catch (pErr) {
+            console.error(`[Baileys] Failed to auto-update profile for ${device.id}:`, pErr.message);
+          }
+        }, 5000);
       }
 
       if (connection === 'close') {
@@ -324,93 +356,83 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
       let evalCount = 0;
 
       for (let i = 0; i < targets.length; i++) {
-        // Firewall: Daily Limit Check
-        if (sentToday >= firewall.dailyLimit) {
-          LOGGER.warn({ deviceId, limit: firewall.dailyLimit }, 'Anti-Ban: Daily message limit reached. Suspending campaign!');
-          break;
-        }
-
-        // Firewall: Batch Warm-Up Delay
-        if (messagesSentInCurrentBatch > 0 && messagesSentInCurrentBatch % firewall.batchSize === 0) {
-          LOGGER.info({ deviceId, delayMin: firewall.batchDelayMinutes }, 'Anti-Ban: Batch size reached. Entering warm-up rest state...');
-          await sleep(firewall.batchDelayMinutes * 60 * 1000); // Minutes to MS
-        }
-
-        messagesSentInCurrentBatch++;
+        // Ultra Blast: Firewall Bypass (Daily Limit, Batch delays, and Failure Killswitch removed as requested)
         evalCount++;
         let deliverySuccess = false;
+        let errorMessage = null;
 
         try {
-          const debugLogPath = path.join(process.cwd(), 'blast-debug.log');
           const jid = formatWhatsAppNumber(targets[i]);
-          fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Target: ${targets[i]}, format: ${jid}\n`);
-          const exists = await runtime.sock.onWhatsApp(jid);
-          fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Exists result: ${JSON.stringify(exists)}\n`);
-          if (exists && exists.length > 0 && exists[0].exists) {
-            try {
-              await runtime.sock.presenceSubscribe(exists[0].jid);
-              await sleep(500);
-              await runtime.sock.sendPresenceUpdate('composing', exists[0].jid);
-              await sleep(1200);
-              await runtime.sock.sendPresenceUpdate('paused', exists[0].jid);
-            } catch (e) {
-              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Error sending presence: ${e.message}\n`);
-            }
-
-            // Build the final message, appending the link in a visual "button" style
-            let finalMessage = message;
-            let resolvedButtonText = buttonText;
-            let resolvedButtonUrl = buttonUrl;
-            // Auto-detect if user put URL in the buttonText field
-            if (buttonText && buttonText.startsWith('http') && !buttonUrl) {
-              resolvedButtonUrl = buttonText;
-              resolvedButtonText = 'Buka Link';
-            }
-            if (resolvedButtonText && resolvedButtonUrl) {
-              finalMessage = `${message}\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *${resolvedButtonText}*\n${resolvedButtonUrl}\n〰️〰️〰️〰️〰️〰️〰️〰️`;
-            } else if (resolvedButtonUrl) {
-              finalMessage = `${message}\n\n🔗 ${resolvedButtonUrl}`;
-            }
-
-            if (resolvedButtonText && resolvedButtonUrl) {
-              // Kirim sebagai interactive URL button (native CTA)
-              const buttonPayload = buildUrlButtonPayload(message, resolvedButtonText, resolvedButtonUrl);
-              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending URL button (btn=${resolvedButtonText}): ${resolvedButtonUrl}\n`);
-              await runtime.sock.sendMessage(exists[0].jid, buttonPayload);
-            } else if (imageUrl) {
-              const cleanedImageUrl = imageUrl.replace(/^\/+/, '');
-              const absolutePath = path.join(__dirname, '../../', cleanedImageUrl);
-              const sendPayload = {};
-              if (fs.existsSync(absolutePath)) {
-                sendPayload.image = fs.readFileSync(absolutePath);
-                sendPayload.caption = finalMessage;
-              } else {
-                LOGGER.warn({ deviceId, absolutePath }, 'Blast image file missing, falling over to text-only');
-                sendPayload.text = finalMessage;
-              }
-              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending image: ${JSON.stringify(sendPayload, (k,v) => k === 'image' ? '<Buffer>' : v)}\n`);
-              await runtime.sock.sendMessage(exists[0].jid, sendPayload);
-            } else {
-              const sendPayload = { text: finalMessage };
-              fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Sending text: ${finalMessage.substring(0, 80)}\n`);
-              await runtime.sock.sendMessage(exists[0].jid, sendPayload);
-            }
-
-            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Successfully sent to ${exists[0].jid}\n`);
-            LOGGER.info({ deviceId, target: targets[i] }, 'Blast message sent successfully');
-            deliverySuccess = true;
-          } else {
-            fs.appendFileSync(debugLogPath, `[${new Date().toISOString()}] Is not on Whatsapp: ${targets[i]}\n`);
-            LOGGER.warn({ deviceId, target: targets[i] }, 'Target number is not registered on WhatsApp');
+          
+          // Ultra Blast: Skipping existence check for speed
+          const targetJid = jid.includes('@') ? jid : `${jid}@s.whatsapp.net`;
+          
+          try {
+            // Minimal presence to trick basic filters
+            await runtime.sock.sendPresenceUpdate('composing', targetJid);
+            await sleep(200);
+            await runtime.sock.sendPresenceUpdate('paused', targetJid);
+          } catch (e) {
+            // Presence error is non-critical
           }
+
+          // Build the final message
+          let finalMessage = message;
+          let resolvedButtonText = buttonText;
+          let resolvedButtonUrl = buttonUrl;
+          if (buttonText && buttonText.startsWith('http') && !buttonUrl) {
+            resolvedButtonUrl = buttonText;
+            resolvedButtonText = 'Buka Link';
+          }
+          if (resolvedButtonText && resolvedButtonUrl) {
+            finalMessage = `${message}\n\n〰️〰️〰️〰️〰️〰️〰️〰️\n🔗 *${resolvedButtonText}*\n${resolvedButtonUrl}\n〰️〰️〰️〰️〰️〰️〰️〰️`;
+          } else if (resolvedButtonUrl) {
+            finalMessage = `${message}\n\n🔗 ${resolvedButtonUrl}`;
+          }
+
+          if (resolvedButtonText && resolvedButtonUrl) {
+            const buttonPayload = buildUrlButtonPayload(message, resolvedButtonText, resolvedButtonUrl);
+            await runtime.sock.sendMessage(targetJid, buttonPayload);
+          } else if (imageUrl) {
+            const cleanedImageUrl = imageUrl.replace(/^\/+/, '');
+            const absolutePath = path.join(__dirname, '../../', cleanedImageUrl);
+            const sendPayload = {};
+            if (fs.existsSync(absolutePath)) {
+              sendPayload.image = fs.readFileSync(absolutePath);
+              sendPayload.caption = finalMessage;
+            } else {
+              sendPayload.text = finalMessage;
+            }
+            await runtime.sock.sendMessage(targetJid, sendPayload);
+          } else {
+            await runtime.sock.sendMessage(targetJid, { text: finalMessage });
+          }
+
+          LOGGER.info({ deviceId, target: targets[i] }, 'Blast message sent successfully');
+          deliverySuccess = true;
         } catch (err) {
-          fs.appendFileSync(path.join(process.cwd(), 'blast-debug.log'), `[${new Date().toISOString()}] Error sending blast: ${err.message}\n`);
+          errorMessage = err.message;
           LOGGER.error({ deviceId, target: targets[i], err: err.message }, 'Failed to send blast message');
+        }
+
+        // Save Blast Log
+        try {
+          await prisma.blastLog.create({
+            data: {
+              userId: deviceRecord.userId,
+              deviceId: deviceId,
+              target: targets[i],
+              message: message,
+              status: deliverySuccess ? 'SUCCESS' : 'FAILED',
+              error: errorMessage
+            }
+          });
+        } catch (logErr) {
+          LOGGER.error({ err: logErr.message }, 'Failed to save blast log to DB');
         }
 
         if (deliverySuccess) {
           sentToday++;
-          
           if (firewall.msgRate > 0) {
             try {
               await prisma.user.update({
@@ -425,38 +447,28 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
           failCount++;
         }
 
-        // Periodically update DB state to maintain limit precision across restarts
+        // Periodically update DB state
         if (deliverySuccess && sentToday % 10 === 0) {
-          await prisma.whatsAppDevice.update({
-            where: { id: deviceId },
-            data: { messagesSentToday: sentToday, lastSentDate: new Date() }
-          });
-        }
-
-        // Firewall: Failure Rate Auto-Killswitch
-        if (evalCount >= 10) {
-          const errorRate = (failCount / evalCount) * 100;
-          if (errorRate >= firewall.failureLimitPercent) {
-            LOGGER.error({ deviceId, errorRate }, 'Anti-Ban: Massive Delivery Failure Rate Hit! Automatically shutting down campaign to prevent Whatsapp ban.');
-            break;
-          }
+           await prisma.whatsAppDevice.update({
+             where: { id: deviceId },
+             data: { messagesSentToday: sentToday, lastSentDate: new Date() }
+           });
         }
 
         if (i < targets.length - 1) {
           let minDelay, maxDelay;
           if (speed === 'fast') {
-            minDelay = 500; maxDelay = 1000;
+            minDelay = 300; maxDelay = 600; // Ultra Fast
           } else if (speed === 'slow') {
             minDelay = 4000; maxDelay = 7000;
           } else {
-            minDelay = 2000; maxDelay = 3000;
+            minDelay = 1500; maxDelay = 2500;
           }
           const delay = Math.floor(Math.random() * (maxDelay - minDelay + 1)) + minDelay;
           await sleep(delay);
         }
       }
 
-      // Final db update for sent counts
       await prisma.whatsAppDevice.update({
         where: { id: deviceId },
         data: { messagesSentToday: sentToday, lastSentDate: new Date() }
@@ -475,5 +487,6 @@ module.exports = {
   disconnectDevice,
   destroyDeviceSession,
   bootstrapConnectedDevices,
-  blastMessages
+  blastMessages,
+  updateProfileAfterConnect
 };

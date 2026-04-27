@@ -24,6 +24,7 @@ app.use('/api/user', userRoutes);
 app.use('/api/whatsapp', whatsappRoutes);
 app.use('/api/finance', financeRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/logs', require('./routes/logs'));
 
 // Backward-compatible aliases for clients still calling endpoints without /api prefix.
 app.use('/auth', authRoutes);
