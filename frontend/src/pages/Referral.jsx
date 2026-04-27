@@ -43,7 +43,7 @@ const Referral = () => {
     navigate('/login');
   };
 
-  const referralLink = profile ? `${window.location.origin}/signup?ref=${profile.referralCode}` : "...";
+  const referralLink = profile ? `${window.location.origin}/register?ref=${profile.referralCode}` : "...";
 
   const handleCopy = () => {
     navigator.clipboard.writeText(referralLink);

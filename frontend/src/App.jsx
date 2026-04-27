@@ -35,6 +35,12 @@ function App() {
             <Register />
           </div>
         } />
+        <Route path="/signup" element={
+          <div className="auth-layout">
+            <div className="bg-wave"></div>
+            <Register />
+          </div>
+        } />
         
         {/* Admin Login Portal */}
         <Route path="/admin-login" element={
