@@ -206,6 +206,7 @@ const WhatsApp = () => {
           if (selectedDeviceId === deviceId) {
             await fetchDeviceStatus(deviceId);
           }
+          setModalCtx({ isOpen: true, type: 'success', title: 'Berhasil', message: 'Device berhasil diputuskan.' });
         } catch {
           setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: 'Error disconnecting device' });
         }
@@ -227,7 +228,8 @@ const WhatsApp = () => {
             setModalOpen(false);
             setSelectedDeviceId(null);
           }
-          fetchDevices();
+          await fetchDevices();
+          setModalCtx({ isOpen: true, type: 'success', title: 'Berhasil', message: 'Device berhasil dihapus.' });
         } catch {
           setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: 'Error deleting device' });
         }
