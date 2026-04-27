@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useSearchParams } from 'react-router-dom';
 import { User, Lock, ArrowRight, ShieldCheck, Eye, EyeOff, CheckCircle2, XCircle } from 'lucide-react';
 import api from '../services/api';
 import ReCAPTCHA from 'react-google-recaptcha';
@@ -13,6 +13,8 @@ const Register = () => {
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [searchParams] = useSearchParams();
+  const [referralCode, setReferralCode] = useState(searchParams.get('ref') || '');
   const [modalCtx, setModalCtx] = useState({ isOpen: false, type: 'success', title: '', message: '' });
   const navigate = useNavigate();
 
@@ -47,7 +49,8 @@ const Register = () => {
       await api.post('/auth/register', {
         username, 
         password,
-        recaptchaToken 
+        recaptchaToken,
+        referralCode
       });
       setModalCtx({ isOpen: true, type: 'success', title: 'Registrasi Berhasil!', message: 'Akun Anda sudah selesai dibentuk. Silakan lanjut ke halaman masuk.' });
     } catch (err) {
@@ -147,6 +150,19 @@ const Register = () => {
                  {password === confirmPassword ? 'Kata sandi cocok' : 'Kata sandi tidak sesuai'}
                </div>
             )}
+          </div>
+          
+          <div className="form-group">
+            <label className="form-label">Kode Referral (Opsional)</label>
+            <div className="input-container">
+              <ArrowRight className="input-icon" size={20} />
+              <input 
+                type="text" 
+                placeholder="Punya kode referral? Masukkan di sini" 
+                value={referralCode}
+                onChange={(e) => setReferralCode(e.target.value.toUpperCase())}
+              />
+            </div>
           </div>
 
           <div className="recaptcha-wrap" style={{ margin: '1.5rem 0', display: 'flex', justifyContent: 'center' }}>

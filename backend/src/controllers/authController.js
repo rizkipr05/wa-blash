@@ -44,7 +44,8 @@ exports.register = async (req, res) => {
     // Handle Referrer
     let referrerId = null;
     if (usedReferralCode) {
-      const referrer = await prisma.user.findUnique({ where: { referralCode: usedReferralCode } });
+      const normalizedCode = String(usedReferralCode).trim().toUpperCase();
+      const referrer = await prisma.user.findUnique({ where: { referralCode: normalizedCode } });
       if (referrer) {
         referrerId = referrer.id;
       }
