@@ -15,7 +15,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { label: 'Dashboard', path: '/admin', icon: <Home size={18} /> },
-    { label: 'Log Aktivitas', path: '/logs', icon: <ClipboardList size={18} /> },
+    { label: 'Log Aktivitas', path: '/admin/logs', icon: <ClipboardList size={18} /> },
     { label: 'Global Platform', path: '/admin/platform', icon: <Settings size={18} /> },
     { label: 'Campaign Template', path: '/admin/template', icon: <MessageSquare size={18} /> },
     { label: 'Users', path: '/admin/users', icon: <Users size={18} /> },

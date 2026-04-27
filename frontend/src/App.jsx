@@ -19,6 +19,7 @@ import AdminWithdrawals from './pages/admin/AdminWithdrawals';
 import AdminProfile from './pages/admin/AdminProfile';
 import AdminPlatform from './pages/admin/AdminPlatform';
 import AdminTemplate from './pages/admin/AdminTemplate';
+import AdminActivityLog from './pages/admin/AdminActivityLog';
 
 function App() {
   return (
@@ -66,6 +67,7 @@ function App() {
             <Route path="/admin/profile" element={<AdminProfile />} />
             <Route path="/admin/platform" element={<AdminPlatform />} />
             <Route path="/admin/template" element={<AdminTemplate />} />
+            <Route path="/admin/logs" element={<AdminActivityLog />} />
           </Route>
         </Route>
 

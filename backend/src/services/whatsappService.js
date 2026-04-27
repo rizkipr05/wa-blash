@@ -413,7 +413,7 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
             const absolutePath = path.join(__dirname, '../../', cleanedImageUrl);
             if (fs.existsSync(absolutePath)) {
               await runtime.sock.sendMessage(targetJid, { 
-                image: { url: absolutePath }, 
+                image: fs.readFileSync(absolutePath), 
                 caption: finalMessage 
               });
             } else {
