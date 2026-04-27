@@ -70,7 +70,7 @@ model Transaction {
 model SystemSetting {
   id          Int      @id @default(autoincrement())
   key         String   @unique
-  value       String
+  value       String   @db.LongText
   description String?
   updatedAt   DateTime @updatedAt
 }
