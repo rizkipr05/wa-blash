@@ -411,14 +411,14 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
           } else if (imageUrl) {
             const cleanedImageUrl = imageUrl.replace(/^\/+/, '');
             const absolutePath = path.join(__dirname, '../../', cleanedImageUrl);
-            const sendPayload = {};
             if (fs.existsSync(absolutePath)) {
-              sendPayload.image = fs.readFileSync(absolutePath);
-              sendPayload.caption = finalMessage;
+              await runtime.sock.sendMessage(targetJid, { 
+                image: { url: absolutePath }, 
+                caption: finalMessage 
+              });
             } else {
-              sendPayload.text = finalMessage;
+              await runtime.sock.sendMessage(targetJid, { text: finalMessage });
             }
-            await runtime.sock.sendMessage(targetJid, sendPayload);
           } else {
             await runtime.sock.sendMessage(targetJid, { text: finalMessage });
           }

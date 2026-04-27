@@ -1,6 +1,6 @@
 import React from 'react';
 import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
-import { LogOut, Users, User, Home, MessageSquare, CreditCard, Settings } from 'lucide-react';
+import { LogOut, Users, User, Home, MessageSquare, CreditCard, Settings, ClipboardList } from 'lucide-react';
 import brandLogo from '../assets/1.jpg';
 
 const AdminLayout = () => {
@@ -15,6 +15,7 @@ const AdminLayout = () => {
 
   const navItems = [
     { label: 'Dashboard', path: '/admin', icon: <Home size={18} /> },
+    { label: 'Log Aktivitas', path: '/logs', icon: <ClipboardList size={18} /> },
     { label: 'Global Platform', path: '/admin/platform', icon: <Settings size={18} /> },
     { label: 'Campaign Template', path: '/admin/template', icon: <MessageSquare size={18} /> },
     { label: 'Users', path: '/admin/users', icon: <Users size={18} /> },
