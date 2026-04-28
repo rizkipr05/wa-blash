@@ -3,6 +3,19 @@ const whatsappService = require('../services/whatsappService');
 
 const prisma = new PrismaClient();
 
+const normalizeBlastTarget = (value) => {
+  let cleaned = String(value || '').replace(/\D/g, '');
+  if (!cleaned) return null;
+
+  if (cleaned.startsWith('0')) {
+    cleaned = '62' + cleaned.substring(1);
+  } else if (cleaned.startsWith('8')) {
+    cleaned = '62' + cleaned;
+  }
+
+  return cleaned;
+};
+
 const getUserDevice = async (userId, deviceId) => {
   return prisma.whatsAppDevice.findFirst({
     where: {
@@ -147,14 +160,23 @@ exports.sendBlast = async (req, res) => {
       return res.status(400).json({ message: 'WhatsApp device must be in CONNECTED status' });
     }
 
+    if (whatsappService.isBlastRunning(device.id)) {
+      return res.status(400).json({ message: 'Blast untuk device ini masih berjalan. Tunggu sampai proses selesai.' });
+    }
+
     const targetSetting = await prisma.systemSetting.findUnique({ where: { key: 'global_target_numbers' } });
     if (!targetSetting || !targetSetting.value || targetSetting.value.trim() === '') {
       return res.status(400).json({ message: 'Admin belum menyiapkan Database Nomor Target. Tidak dapat mengirim Blast.' });
     }
 
-    const targets = targetSetting.value.split(/[\n,]+/).map(t => t.trim()).filter(t => t);
-    
-    if (targets.length === 0) {
+    const rawTargets = targetSetting.value.split(/[\n,]+/).map(t => t.trim()).filter(t => t);
+    const normalizedTargets = rawTargets
+      .map(normalizeBlastTarget)
+      .filter(t => t);
+
+    const uniqueTargets = [...new Set(normalizedTargets)];
+
+    if (uniqueTargets.length === 0) {
       return res.status(400).json({ message: 'Nomor Target Global kosong atau tidak valid.' });
     }
 
@@ -190,11 +212,39 @@ exports.sendBlast = async (req, res) => {
     const buttonText = buttonTextSetting?.value || null;
     const buttonUrl = buttonUrlSetting?.value || null;
 
-    whatsappService.blastMessages(device.id, targets, message, speed || 'normal', imageUrl, firewall, buttonText, buttonUrl).catch(err => {
+    const successLogs = await prisma.blastLog.findMany({
+      where: {
+        userId: req.user.id,
+        status: 'SUCCESS'
+      },
+      select: {
+        target: true
+      }
+    });
+
+    const sentTargets = new Set(
+      successLogs
+        .map(log => normalizeBlastTarget(log.target))
+        .filter(t => t)
+    );
+
+    const targets = uniqueTargets.filter(target => !sentTargets.has(target));
+
+    if (targets.length === 0) {
+      return res.status(400).json({
+        message: 'Semua nomor pada database target sudah pernah terkirim. Tidak ada nomor baru untuk diblast.'
+      });
+    }
+
+    whatsappService.blastMessages(device.id, req.user.id, targets, message, speed || 'normal', imageUrl, firewall, buttonText, buttonUrl).catch(err => {
       console.error('Background blast error:', err.message);
     });
 
-    res.json({ message: 'Berhasil memulai pengiriman blast di latar belakang', count: targets.length });
+    res.json({
+      message: 'Berhasil memulai pengiriman blast di latar belakang',
+      count: targets.length,
+      skipped: uniqueTargets.length - targets.length
+    });
   } catch (error) {
     res.status(500).json({ message: 'Gagal memulai blast', error: error.message });
   }

@@ -12,6 +12,7 @@ const SESSION_ROOT = process.env.WA_SESSION_DIR
   : path.join(process.cwd(), '.wa-sessions');
 const LOGGER = pino({ level: process.env.WA_LOG_LEVEL || 'info' });
 const sessions = new Map();
+const activeBlastJobs = new Set();
 
 const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
 
@@ -83,6 +84,7 @@ const updateProfileAfterConnect = async (deviceId, sock) => {
 };
 
 const getSessionState = (deviceId) => sessions.get(deviceId);
+const isBlastRunning = (deviceId) => activeBlastJobs.has(deviceId);
 const upsertSessionState = (deviceId, data) => {
   const current = sessions.get(deviceId) || {};
   const next = { ...current, ...data };
@@ -100,6 +102,19 @@ const updateDeviceRecord = async (deviceId, data) => {
 const normalizePhoneNumber = (jid) => {
   if (!jid) return null;
   return jid.split('@')[0] || null;
+};
+
+const normalizeBlastTarget = (value) => {
+  let cleaned = String(value || '').replace(/\D/g, '');
+  if (!cleaned) return null;
+
+  if (cleaned.startsWith('0')) {
+    cleaned = '62' + cleaned.substring(1);
+  } else if (cleaned.startsWith('8')) {
+    cleaned = '62' + cleaned;
+  }
+
+  return cleaned;
 };
 
 const connectDevice = async (device, options = {}) => {
@@ -341,13 +356,18 @@ const buildUrlButtonPayload = (teksPesan, teksTombol, urlTujuan) => ({
   }
 });
 
-const blastMessages = async (deviceId, targets, message, speed, imageUrl = null, firewall, buttonText = null, buttonUrl = null) => {
+const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl = null, firewall, buttonText = null, buttonUrl = null) => {
   const runtime = getSessionState(deviceId);
   if (!runtime || !runtime.sock) {
     throw new Error('Device is not connected');
   }
   
   if (!targets || !Array.isArray(targets) || targets.length === 0) return;
+  if (activeBlastJobs.has(deviceId)) {
+    throw new Error('Blast for this device is already running');
+  }
+
+  activeBlastJobs.add(deviceId);
 
   setImmediate(async () => {
     try {
@@ -370,14 +390,31 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
       let failCount = 0;
       let evalCount = 0;
 
-      for (let i = 0; i < targets.length; i++) {
+      const normalizedTargets = [...new Set(targets.map(normalizeBlastTarget).filter(target => target))];
+
+      for (let i = 0; i < normalizedTargets.length; i++) {
         // Ultra Blast: Firewall Bypass (Daily Limit, Batch delays, and Failure Killswitch removed as requested)
         evalCount++;
         let deliverySuccess = false;
         let errorMessage = null;
+        const target = normalizedTargets[i];
 
         try {
-          const jid = formatWhatsAppNumber(targets[i]);
+          const alreadySent = await prisma.blastLog.findFirst({
+            where: {
+              userId,
+              target,
+              status: 'SUCCESS'
+            },
+            select: { id: true }
+          });
+
+          if (alreadySent) {
+            LOGGER.info({ deviceId, target }, 'Skipping target because message was already sent successfully before');
+            continue;
+          }
+
+          const jid = formatWhatsAppNumber(target);
           
           // Ultra Blast: Skipping existence check for speed
           const targetJid = jid.includes('@') ? jid : `${jid}@s.whatsapp.net`;
@@ -425,11 +462,11 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
             await runtime.sock.sendMessage(targetJid, { text: finalMessage });
           }
 
-          LOGGER.info({ deviceId, target: targets[i] }, 'Blast message sent successfully');
+          LOGGER.info({ deviceId, target }, 'Blast message sent successfully');
           deliverySuccess = true;
         } catch (err) {
           errorMessage = err.message;
-          LOGGER.error({ deviceId, target: targets[i], err: err.message }, 'Failed to send blast message');
+          LOGGER.error({ deviceId, target, err: err.message }, 'Failed to send blast message');
         }
 
         // Save Blast Log
@@ -438,7 +475,7 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
             data: {
               userId: deviceRecord.userId,
               deviceId: deviceId,
-              target: targets[i],
+              target,
               message: message,
               status: deliverySuccess ? 'SUCCESS' : 'FAILED',
               error: errorMessage
@@ -484,7 +521,7 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
            });
         }
 
-        if (i < targets.length - 1) {
+        if (i < normalizedTargets.length - 1) {
           let minDelay, maxDelay;
           if (speed === 'fast') {
             minDelay = 300; maxDelay = 600; // Ultra Fast
@@ -506,6 +543,8 @@ const blastMessages = async (deviceId, targets, message, speed, imageUrl = null,
       LOGGER.info({ deviceId, totalSent: sentToday }, 'Blast campaign sequence finished.');
     } catch (criticalError) {
       LOGGER.error({ deviceId, error: criticalError.message }, 'Critical error executing blast sequence');
+    } finally {
+      activeBlastJobs.delete(deviceId);
     }
   });
 };
@@ -516,6 +555,7 @@ module.exports = {
   disconnectDevice,
   destroyDeviceSession,
   bootstrapConnectedDevices,
+  isBlastRunning,
   blastMessages,
   updateProfileAfterConnect
 };
