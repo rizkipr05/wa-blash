@@ -4,6 +4,7 @@ const pino = require('pino');
 const QRCode = require('qrcode');
 const { PrismaClient } = require('@prisma/client');
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, Browsers, fetchLatestBaileysVersion, generateWAMessageFromContent, proto } = require('@whiskeysockets/baileys');
+const { normalizeBlastTarget } = require('../utils/blastTargets');
 
 const prisma = new PrismaClient();
 
@@ -85,6 +86,14 @@ const updateProfileAfterConnect = async (deviceId, sock) => {
 
 const getSessionState = (deviceId) => sessions.get(deviceId);
 const isBlastRunning = (deviceId) => activeBlastJobs.has(deviceId);
+const withProgressPercent = (progress) => {
+  if (!progress) return null;
+
+  return {
+    ...progress,
+    percent: progress.totalTargets > 0 ? Math.min(100, Math.round((progress.processedTargets / progress.totalTargets) * 100)) : 0
+  };
+};
 const upsertSessionState = (deviceId, data) => {
   const current = sessions.get(deviceId) || {};
   const next = { ...current, ...data };
@@ -104,17 +113,34 @@ const normalizePhoneNumber = (jid) => {
   return jid.split('@')[0] || null;
 };
 
-const normalizeBlastTarget = (value) => {
-  let cleaned = String(value || '').replace(/\D/g, '');
-  if (!cleaned) return null;
+const getBlastProgress = async (deviceId) => {
+  const campaign = await prisma.blastCampaign.findFirst({
+    where: { deviceId },
+    orderBy: { createdAt: 'desc' }
+  });
 
-  if (cleaned.startsWith('0')) {
-    cleaned = '62' + cleaned.substring(1);
-  } else if (cleaned.startsWith('8')) {
-    cleaned = '62' + cleaned;
-  }
+  return withProgressPercent(campaign);
+};
 
-  return cleaned;
+const updateBlastCampaignProgress = async (campaignId, data) => {
+  const campaign = await prisma.blastCampaign.update({
+    where: { id: campaignId },
+    data
+  });
+
+  return withProgressPercent(campaign);
+};
+
+const recoverInterruptedBlastJobs = async () => {
+  await prisma.blastCampaign.updateMany({
+    where: { status: 'RUNNING' },
+    data: {
+      status: 'FAILED',
+      error: 'Server restarted before blast finished',
+      finishedAt: new Date(),
+      currentTarget: null
+    }
+  });
 };
 
 const connectDevice = async (device, options = {}) => {
@@ -367,6 +393,29 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
     throw new Error('Blast for this device is already running');
   }
 
+  const normalizedTargets = [...new Set(targets.map(normalizeBlastTarget).filter(target => target))];
+  const campaign = await prisma.blastCampaign.create({
+    data: {
+      userId,
+      deviceId,
+      status: 'RUNNING',
+      speed,
+      totalTargets: normalizedTargets.length,
+      processedTargets: 0,
+      successTargets: 0,
+      failedTargets: 0,
+      skippedTargets: 0,
+      currentIndex: 0,
+      currentTarget: null,
+      error: null
+    }
+  });
+
+  const initialProgress = withProgressPercent({
+    ...campaign,
+    userId,
+  });
+
   activeBlastJobs.add(deviceId);
 
   setImmediate(async () => {
@@ -390,8 +439,6 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
       let failCount = 0;
       let evalCount = 0;
 
-      const normalizedTargets = [...new Set(targets.map(normalizeBlastTarget).filter(target => target))];
-
       for (let i = 0; i < normalizedTargets.length; i++) {
         // Ultra Blast: Firewall Bypass (Daily Limit, Batch delays, and Failure Killswitch removed as requested)
         evalCount++;
@@ -403,14 +450,22 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
           const alreadySent = await prisma.blastLog.findFirst({
             where: {
               userId,
-              target,
-              status: 'SUCCESS'
+              target
             },
             select: { id: true }
           });
 
           if (alreadySent) {
-            LOGGER.info({ deviceId, target }, 'Skipping target because message was already sent successfully before');
+            LOGGER.info({ deviceId, target }, 'Skipping target because message was already attempted before');
+            await prisma.blastCampaign.update({
+              where: { id: campaign.id },
+              data: {
+                currentIndex: i + 1,
+                currentTarget: target,
+                processedTargets: { increment: 1 },
+                skippedTargets: { increment: 1 }
+              }
+            });
             continue;
           }
 
@@ -487,6 +542,15 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
 
         if (deliverySuccess) {
           sentToday++;
+          await prisma.blastCampaign.update({
+            where: { id: campaign.id },
+            data: {
+              currentIndex: i + 1,
+              currentTarget: target,
+              processedTargets: { increment: 1 },
+              successTargets: { increment: 1 }
+            }
+          });
           if (firewall.msgRate > 0) {
             try {
               await prisma.user.update({
@@ -511,6 +575,15 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
           }
         } else {
           failCount++;
+          await prisma.blastCampaign.update({
+            where: { id: campaign.id },
+            data: {
+              currentIndex: i + 1,
+              currentTarget: target,
+              processedTargets: { increment: 1 },
+              failedTargets: { increment: 1 }
+            }
+          });
         }
 
         // Periodically update DB state
@@ -540,13 +613,26 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
         data: { messagesSentToday: sentToday, lastSentDate: new Date() }
       });
 
+      await updateBlastCampaignProgress(campaign.id, {
+        status: 'COMPLETED',
+        currentTarget: null,
+        finishedAt: new Date()
+      });
+
       LOGGER.info({ deviceId, totalSent: sentToday }, 'Blast campaign sequence finished.');
     } catch (criticalError) {
+      await updateBlastCampaignProgress(campaign.id, {
+        status: 'FAILED',
+        error: criticalError.message,
+        finishedAt: new Date()
+      });
       LOGGER.error({ deviceId, error: criticalError.message }, 'Critical error executing blast sequence');
     } finally {
       activeBlastJobs.delete(deviceId);
     }
   });
+
+  return initialProgress;
 };
 
 module.exports = {
@@ -555,7 +641,9 @@ module.exports = {
   disconnectDevice,
   destroyDeviceSession,
   bootstrapConnectedDevices,
+  recoverInterruptedBlastJobs,
   isBlastRunning,
+  getBlastProgress,
   blastMessages,
   updateProfileAfterConnect
 };

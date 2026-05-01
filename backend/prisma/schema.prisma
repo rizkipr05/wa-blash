@@ -28,6 +28,7 @@ model User {
   transactions      Transaction[]
   referrals         User[]           @relation("UserReferrals")
   referrer          User?            @relation("UserReferrals", fields: [referredBy], references: [id])
+  blastCampaigns    BlastCampaign[]
 }
 
 model WhatsAppDevice {
@@ -42,6 +43,7 @@ model WhatsAppDevice {
   updatedAt         DateTime @updatedAt
 
   user              User     @relation(fields: [userId], references: [id])
+  blastCampaigns    BlastCampaign[]
 }
 
 model Withdrawal {
@@ -83,4 +85,31 @@ model BlastLog {
   status    String   // SUCCESS, FAILED
   error     String?
   createdAt DateTime @default(now())
+}
+
+model BlastCampaign {
+  id              Int      @id @default(autoincrement())
+  userId          Int
+  deviceId        Int
+  status          String   @default("RUNNING") // RUNNING, COMPLETED, FAILED
+  speed           String?
+  totalTargets    Int      @default(0)
+  processedTargets Int     @default(0)
+  successTargets  Int      @default(0)
+  failedTargets   Int      @default(0)
+  skippedTargets  Int      @default(0)
+  currentIndex    Int      @default(0)
+  currentTarget   String?
+  error           String?
+  startedAt       DateTime @default(now())
+  finishedAt      DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user            User           @relation(fields: [userId], references: [id])
+  device          WhatsAppDevice @relation(fields: [deviceId], references: [id])
+
+  @@index([deviceId, createdAt])
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
 }

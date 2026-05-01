@@ -1,20 +1,8 @@
 const { PrismaClient } = require('@prisma/client');
 const whatsappService = require('../services/whatsappService');
+const { getUniqueNormalizedTargets, getPendingTargets } = require('../utils/blastTargets');
 
 const prisma = new PrismaClient();
-
-const normalizeBlastTarget = (value) => {
-  let cleaned = String(value || '').replace(/\D/g, '');
-  if (!cleaned) return null;
-
-  if (cleaned.startsWith('0')) {
-    cleaned = '62' + cleaned.substring(1);
-  } else if (cleaned.startsWith('8')) {
-    cleaned = '62' + cleaned;
-  }
-
-  return cleaned;
-};
 
 const getUserDevice = async (userId, deviceId) => {
   return prisma.whatsAppDevice.findFirst({
@@ -31,7 +19,16 @@ exports.listDevices = async (req, res) => {
       where: { userId: req.user.id },
       orderBy: { id: 'desc' }
     });
-    res.json(devices);
+    const devicesWithProgress = await Promise.all(
+      devices.map(async (device) => ({
+        ...device,
+        blastProgress: await whatsappService.getBlastProgress(device.id)
+      }))
+    );
+
+    res.json(
+      devicesWithProgress
+    );
   } catch (error) {
     res.status(500).json({ message: 'Error listing devices', error: error.message });
   }
@@ -170,11 +167,7 @@ exports.sendBlast = async (req, res) => {
     }
 
     const rawTargets = targetSetting.value.split(/[\n,]+/).map(t => t.trim()).filter(t => t);
-    const normalizedTargets = rawTargets
-      .map(normalizeBlastTarget)
-      .filter(t => t);
-
-    const uniqueTargets = [...new Set(normalizedTargets)];
+    const uniqueTargets = getUniqueNormalizedTargets(rawTargets);
 
     if (uniqueTargets.length === 0) {
       return res.status(400).json({ message: 'Nomor Target Global kosong atau tidak valid.' });
@@ -212,40 +205,63 @@ exports.sendBlast = async (req, res) => {
     const buttonText = buttonTextSetting?.value || null;
     const buttonUrl = buttonUrlSetting?.value || null;
 
-    const successLogs = await prisma.blastLog.findMany({
+    const existingLogs = await prisma.blastLog.findMany({
       where: {
-        userId: req.user.id,
-        status: 'SUCCESS'
+        userId: req.user.id
       },
       select: {
         target: true
       }
     });
 
-    const sentTargets = new Set(
-      successLogs
-        .map(log => normalizeBlastTarget(log.target))
-        .filter(t => t)
+    const { pendingTargets: targets, skippedCount } = getPendingTargets(
+      uniqueTargets,
+      existingLogs.map((log) => log.target)
     );
-
-    const targets = uniqueTargets.filter(target => !sentTargets.has(target));
 
     if (targets.length === 0) {
       return res.status(400).json({
-        message: 'Semua nomor pada database target sudah pernah terkirim. Tidak ada nomor baru untuk diblast.'
+        message: 'Semua nomor pada database target sudah pernah diproses. Tidak ada nomor baru untuk diblast.'
       });
     }
 
-    whatsappService.blastMessages(device.id, req.user.id, targets, message, speed || 'normal', imageUrl, firewall, buttonText, buttonUrl).catch(err => {
-      console.error('Background blast error:', err.message);
-    });
+    const blastProgress = await whatsappService.blastMessages(
+      device.id,
+      req.user.id,
+      targets,
+      message,
+      speed || 'normal',
+      imageUrl,
+      firewall,
+      buttonText,
+      buttonUrl
+    );
 
     res.json({
       message: 'Berhasil memulai pengiriman blast di latar belakang',
       count: targets.length,
-      skipped: uniqueTargets.length - targets.length
+      skipped: skippedCount,
+      blastProgress
     });
   } catch (error) {
     res.status(500).json({ message: 'Gagal memulai blast', error: error.message });
+  }
+};
+
+exports.getBlastProgress = async (req, res) => {
+  const deviceId = parseInt(req.params.id, 10);
+
+  try {
+    const device = await getUserDevice(req.user.id, deviceId);
+    if (!device) {
+      return res.status(404).json({ message: 'Device not found' });
+    }
+
+    res.json({
+      deviceId,
+      blastProgress: await whatsappService.getBlastProgress(deviceId)
+    });
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching blast progress', error: error.message });
   }
 };

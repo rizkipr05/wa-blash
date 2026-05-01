@@ -31,6 +31,12 @@ import PopupModal from '../components/PopupModal';
 import brandLogo from '../assets/1.jpg';
 
 const POLL_INTERVAL = 2500;
+const numberFormatter = new Intl.NumberFormat('id-ID');
+
+const formatBlastSummary = (progress) => {
+  if (!progress) return 'Belum ada proses blast aktif.';
+  return `Nomor ke-${numberFormatter.format(progress.processedTargets)} dari ${numberFormatter.format(progress.totalTargets)}`;
+};
 
 const WhatsApp = () => {
   const navigate = useNavigate();
@@ -89,6 +95,14 @@ const WhatsApp = () => {
       fetchDevices();
     }, 0);
     return () => clearTimeout(timer);
+  }, [fetchDevices]);
+
+  useEffect(() => {
+    const intervalId = setInterval(() => {
+      fetchDevices();
+    }, POLL_INTERVAL);
+
+    return () => clearInterval(intervalId);
   }, [fetchDevices]);
 
   useEffect(() => {
@@ -181,7 +195,8 @@ const WhatsApp = () => {
             deviceId: parseInt(blastDeviceId, 10),
             speed: blastSpeed
           });
-          setModalCtx({ isOpen: true, type: 'success', title: 'Berhasil', message: `${resp.data.message}\nTotal Target: ${resp.data.count}` });
+          await fetchDevices();
+          setModalCtx({ isOpen: true, type: 'success', title: 'Berhasil', message: `${resp.data.message}\nTotal Target: ${resp.data.count}\n${formatBlastSummary(resp.data.blastProgress)}` });
           setBlastModalOpen(false);
         } catch (err) {
           setModalCtx({ isOpen: true, type: 'error', title: 'Gagal', message: err.response?.data?.message || 'Error saat mengirim blast' });
@@ -254,8 +269,9 @@ const WhatsApp = () => {
     { label: 'Aktif', value: devices.filter((d) => d.status === 'CONNECTED').length, icon: <CheckCircle size={18} />, color: '#00b894', bg: '#e6fff9' },
     { label: 'Offline', value: devices.filter((d) => d.status === 'DISCONNECTED').length, icon: <XCircle size={18} />, color: '#ff7675', bg: '#fff5f5' },
     { label: 'Total', value: devices.length, icon: <Smartphone size={18} />, color: '#0984e3', bg: '#ebf5ff' },
-    { label: 'Pesan', value: '0', icon: <MessageSquare size={18} />, color: '#fdcb6e', bg: '#fff9eb' }
+    { label: 'Blast Jalan', value: devices.filter((d) => d.blastProgress?.status === 'RUNNING').length, icon: <MessageSquare size={18} />, color: '#fdcb6e', bg: '#fff9eb' }
   ];
+  const selectedBlastDevice = devices.find((device) => String(device.id) === String(blastDeviceId));
 
   return (
     <div className="dashboard-container">
@@ -348,6 +364,37 @@ const WhatsApp = () => {
             <div className="device-items-list" style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
               {devices.map((device) => (
                 <div key={device.id} style={{ border: '1px solid #f1f5f9', borderRadius: '12px', padding: '1.25rem', background: 'var(--card-bg)', boxShadow: '0 2px 4px rgba(0,0,0,0.02)' }}>
+                  {device.blastProgress ? (
+                    <div style={{ marginBottom: '1rem', background: device.blastProgress.status === 'RUNNING' ? '#eff6ff' : device.blastProgress.status === 'FAILED' ? '#fff1f2' : '#f8fafc', border: `1px solid ${device.blastProgress.status === 'RUNNING' ? '#bfdbfe' : device.blastProgress.status === 'FAILED' ? '#fecdd3' : '#e2e8f0'}`, borderRadius: '10px', padding: '0.9rem 1rem' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '0.65rem', flexWrap: 'wrap' }}>
+                        <div>
+                          <div style={{ fontWeight: 800, fontSize: '0.85rem', color: device.blastProgress.status === 'FAILED' ? '#e11d48' : '#1d4ed8' }}>
+                            {device.blastProgress.status === 'RUNNING' ? 'Blast sedang berjalan' : device.blastProgress.status === 'FAILED' ? 'Blast gagal' : 'Blast terakhir selesai'}
+                          </div>
+                          <div style={{ fontSize: '0.78rem', color: '#475569', marginTop: '0.2rem' }}>
+                            {formatBlastSummary(device.blastProgress)}
+                          </div>
+                        </div>
+                        <div style={{ fontSize: '1.1rem', fontWeight: 800, color: device.blastProgress.status === 'FAILED' ? '#e11d48' : '#0f172a' }}>
+                          {device.blastProgress.percent}%
+                        </div>
+                      </div>
+                      <div style={{ width: '100%', height: '8px', background: '#dbeafe', borderRadius: '999px', overflow: 'hidden', marginBottom: '0.65rem' }}>
+                        <div style={{ width: `${device.blastProgress.percent}%`, height: '100%', background: device.blastProgress.status === 'FAILED' ? '#f43f5e' : '#3b82f6', transition: 'width 0.25s ease' }} />
+                      </div>
+                      <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap', fontSize: '0.72rem', color: '#475569', fontWeight: 600 }}>
+                        <span>Terkirim: {numberFormatter.format(device.blastProgress.successTargets)}</span>
+                        <span>Gagal: {numberFormatter.format(device.blastProgress.failedTargets)}</span>
+                        <span>Skip: {numberFormatter.format(device.blastProgress.skippedTargets)}</span>
+                        {device.blastProgress.currentTarget ? <span>Target: {device.blastProgress.currentTarget}</span> : null}
+                      </div>
+                      {device.blastProgress.error ? (
+                        <div style={{ marginTop: '0.5rem', fontSize: '0.72rem', color: '#be123c', fontWeight: 600 }}>
+                          Error: {device.blastProgress.error}
+                        </div>
+                      ) : null}
+                    </div>
+                  ) : null}
                   
                   {/* Top Row: Icon + Number + Status */}
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: device.status === 'CONNECTED' ? '0' : '1rem' }}>
@@ -369,8 +416,8 @@ const WhatsApp = () => {
                           {device.phoneNumber || `Device #${device.id}`}
                         </div>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: '#ecfdf5', padding: '0.35rem 0.75rem', borderRadius: '8px', fontSize: '0.75rem', color: '#10b981', fontWeight: 600 }}>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Inbox size={14} color="#f59e0b"/> {device.messagesSentToday || 1}</span>
-                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><DollarSign size={14} color="#fbbf24"/> Rp{(device.messagesSentToday || 1) * 500}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Inbox size={14} color="#f59e0b"/> {device.messagesSentToday || 0}</span>
+                          <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><DollarSign size={14} color="#fbbf24"/> Rp{(device.messagesSentToday || 0) * 500}</span>
                           <span style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Gift size={14} color="#f43f5e"/> Rp0</span>
                         </div>
                       </div>
@@ -604,6 +651,30 @@ const WhatsApp = () => {
                   ))}
                 </select>
               </div>
+
+              {selectedBlastDevice?.blastProgress ? (
+                <div style={{ marginBottom: '1.25rem', background: '#f8fafc', border: '1px solid #e2e8f0', borderRadius: '10px', padding: '1rem' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', gap: '1rem', alignItems: 'center', marginBottom: '0.5rem', flexWrap: 'wrap' }}>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#0f172a' }}>Progress Device Terpilih</div>
+                      <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.2rem' }}>
+                        {formatBlastSummary(selectedBlastDevice.blastProgress)}
+                      </div>
+                    </div>
+                    <div style={{ fontWeight: 800, fontSize: '1rem', color: '#1d4ed8' }}>
+                      {selectedBlastDevice.blastProgress.percent}%
+                    </div>
+                  </div>
+                  <div style={{ width: '100%', height: '8px', background: '#dbeafe', borderRadius: '999px', overflow: 'hidden', marginBottom: '0.6rem' }}>
+                    <div style={{ width: `${selectedBlastDevice.blastProgress.percent}%`, height: '100%', background: '#3b82f6', transition: 'width 0.25s ease' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', fontSize: '0.72rem', color: '#475569', fontWeight: 600 }}>
+                    <span>Terkirim: {numberFormatter.format(selectedBlastDevice.blastProgress.successTargets)}</span>
+                    <span>Gagal: {numberFormatter.format(selectedBlastDevice.blastProgress.failedTargets)}</span>
+                    <span>Skip: {numberFormatter.format(selectedBlastDevice.blastProgress.skippedTargets)}</span>
+                  </div>
+                </div>
+              ) : null}
 
 
 

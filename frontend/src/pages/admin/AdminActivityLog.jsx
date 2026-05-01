@@ -104,7 +104,20 @@ const AdminActivityLog = () => {
                   <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
                     <td style={{ padding: '1rem' }}>
                       <div style={{ fontWeight: 700, color: 'var(--text-main)' }}>{log.target}</div>
-                      <div style={{ fontSize: '0.75rem', color: '#0984e3' }}>User ID: {log.userId}</div>
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginTop: '0.3rem' }}>
+                        {log.username ? (
+                          <div style={{ fontSize: '0.75rem', color: '#22c55e', fontWeight: 600 }}>
+                            Akun: {log.username}
+                          </div>
+                        ) : null}
+                        <div style={{ fontSize: '0.72rem', color: '#60a5fa' }}>
+                          {log.senderPhoneNumber
+                            ? `Pengirim WA: +${log.senderPhoneNumber}`
+                            : log.senderDeviceId
+                              ? `Device Blast: #${log.senderDeviceId}`
+                              : log.senderLabel}
+                        </div>
+                      </div>
                     </td>
                     <td style={{ padding: '1rem' }}>
                       <div style={{ fontSize: '0.85rem', color: '#f1f1f1', maxWidth: '300px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.message}</div>

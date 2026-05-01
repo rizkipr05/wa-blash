@@ -6,7 +6,7 @@ const userRoutes = require('./routes/userRoutes');
 const whatsappRoutes = require('./routes/whatsappRoutes');
 const financeRoutes = require('./routes/financeRoutes');
 const path = require('path');
-const { bootstrapConnectedDevices } = require('./services/whatsappService');
+const { bootstrapConnectedDevices, recoverInterruptedBlastJobs } = require('./services/whatsappService');
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -38,6 +38,9 @@ app.listen(port, () => {
   if (process.env.NODE_ENV === 'production' && !process.env.WA_SESSION_DIR) {
     console.warn('WA_SESSION_DIR is not set. Set it to a protected path outside public web directories.');
   }
+  recoverInterruptedBlastJobs().catch((error) => {
+    console.error('Failed to recover interrupted blast campaigns:', error.message);
+  });
   bootstrapConnectedDevices().catch((error) => {
     console.error('Failed to bootstrap WhatsApp sessions:', error.message);
   });
