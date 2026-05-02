@@ -445,18 +445,22 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
         let deliverySuccess = false;
         let errorMessage = null;
         const target = normalizedTargets[i];
+        let blastLogEntry = null;
 
         try {
-          const alreadySent = await prisma.blastLog.findFirst({
-            where: {
-              userId,
-              target
-            },
-            select: { id: true }
+          blastLogEntry = await prisma.blastLog.create({
+            data: {
+              userId: deviceRecord.userId,
+              deviceId,
+              target,
+              message,
+              status: 'PROCESSING',
+              error: null
+            }
           });
-
-          if (alreadySent) {
-            LOGGER.info({ deviceId, target }, 'Skipping target because message was already attempted before');
+        } catch (claimErr) {
+          if (claimErr.code === 'P2002') {
+            LOGGER.info({ deviceId, userId, target }, 'Skipping target because message was already claimed before for this user');
             await prisma.blastCampaign.update({
               where: { id: campaign.id },
               data: {
@@ -468,6 +472,11 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
             });
             continue;
           }
+
+          throw claimErr;
+        }
+
+        try {
 
           const jid = formatWhatsAppNumber(target);
           
@@ -526,12 +535,11 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
 
         // Save Blast Log
         try {
-          await prisma.blastLog.create({
+          await prisma.blastLog.update({
+            where: {
+              id: blastLogEntry.id
+            },
             data: {
-              userId: deviceRecord.userId,
-              deviceId: deviceId,
-              target,
-              message: message,
               status: deliverySuccess ? 'SUCCESS' : 'FAILED',
               error: errorMessage
             }

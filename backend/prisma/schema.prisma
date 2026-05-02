@@ -82,9 +82,11 @@ model BlastLog {
   deviceId  Int
   target    String
   message   String   @db.Text
-  status    String   // SUCCESS, FAILED
+  status    String   // PROCESSING, SUCCESS, FAILED
   error     String?
   createdAt DateTime @default(now())
+
+  @@unique([userId, target])
 }
 
 model BlastCampaign {
