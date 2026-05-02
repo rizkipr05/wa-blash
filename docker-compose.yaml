@@ -44,7 +44,7 @@ services:
       - uploads_data:/app/uploads
       - wa_sessions:/app/wa-sessions
     command: >
-      sh -c "npx prisma db push && node src/app.js"
+      sh -c "node scripts/prepare_blastlog_uniques.js && npx prisma db push && node src/app.js"
 
   frontend:
     build:
