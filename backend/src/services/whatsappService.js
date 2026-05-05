@@ -460,7 +460,7 @@ const blastMessages = async (deviceId, userId, targets, message, speed, imageUrl
           });
         } catch (claimErr) {
           if (claimErr.code === 'P2002') {
-            LOGGER.info({ deviceId, userId, target }, 'Skipping target because message was already claimed before for this user');
+            LOGGER.info({ deviceId, userId, target }, 'Skipping target because it was already claimed globally');
             await prisma.blastCampaign.update({
               where: { id: campaign.id },
               data: {

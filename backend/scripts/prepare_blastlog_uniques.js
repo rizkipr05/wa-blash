@@ -17,9 +17,9 @@ async function main() {
   }
 
   const duplicateRows = await prisma.$queryRaw`
-    SELECT userId, target, COUNT(*) AS duplicateCount
+    SELECT target, COUNT(*) AS duplicateCount
     FROM BlastLog
-    GROUP BY userId, target
+    GROUP BY target
     HAVING COUNT(*) > 1
   `;
 
@@ -32,8 +32,7 @@ async function main() {
     DELETE bl1
     FROM BlastLog bl1
     INNER JOIN BlastLog bl2
-      ON bl1.userId = bl2.userId
-      AND bl1.target = bl2.target
+      ON bl1.target = bl2.target
       AND bl1.id > bl2.id
   `);
 

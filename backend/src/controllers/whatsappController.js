@@ -206,9 +206,6 @@ exports.sendBlast = async (req, res) => {
     const buttonUrl = buttonUrlSetting?.value || null;
 
     const existingLogs = await prisma.blastLog.findMany({
-      where: {
-        userId: req.user.id
-      },
       select: {
         target: true
       }

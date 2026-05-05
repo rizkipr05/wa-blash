@@ -28,7 +28,7 @@ test('getUniqueNormalizedTargets removes duplicate numbers from one database inp
 test('getPendingTargets blocks repeat send for any number already logged before', () => {
   const result = getPendingTargets(
     ['0812-3456-7890', '0899-111-222', '0817-000-000'],
-    ['6281234567890', '0899111222']
+    ['6281234567890', '0899-111-222']
   );
 
   assert.deepEqual(result.uniqueTargets, ['6281234567890', '62899111222', '62817000000']);
